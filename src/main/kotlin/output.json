@@ -1,0 +1,38 @@
+{
+  "result": [
+    [
+      {
+        "uuid": "181e030e-33b8-4cdd-8857-91315c875095",
+        "name": "Blue"
+      },
+      {
+        "uuid": "69bb8911-0960-4d5e-ae1a-f934cd786842",
+        "name": "Green"
+      }
+    ],
+    [
+      {
+        "uuid": "d2520fde-8ff2-4e1c-9535-d5de542975f7",
+        "name": "Red"
+      }
+    ],
+    [
+      {
+        "uuid": "496a100a-be79-466b-b33d-b2dca1dffebd",
+        "name": "Banana"
+      }
+    ],
+    [
+      {
+        "uuid": "18a5b9e2-161f-4e18-a1eb-9c7f8ac32d0d",
+        "name": "Orange"
+      }
+    ],
+    [
+      {
+        "uuid": "3edf54d2-88b2-405f-8ab8-780cec8dc12b",
+        "name": "Brown"
+      }
+    ]
+  ]
+}
