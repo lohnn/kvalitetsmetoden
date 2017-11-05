@@ -2,9 +2,9 @@ import java.util.*
 
 fun InputList.rank(): Result {
     //Check that we have more than one voters
-//    if (this.voters.size <= 1) {
-//        return Result(this.voters.first().votes)
-//    }
+    if (this.voters.size <= 1) {
+        return Result(this.voters.first().votes)
+    }
 
     //Check if any voters has double votes
     this.voters.forEach {
