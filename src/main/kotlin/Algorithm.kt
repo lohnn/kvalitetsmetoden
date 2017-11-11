@@ -1,5 +1,3 @@
-import java.util.*
-
 fun InputList.rank(): Result {
     //Check that we have more than one voters
     if (this.voters.size <= 1) {
@@ -30,9 +28,12 @@ fun InputList.rank(): Result {
         }
     }
 
-    val temp = this.voters.flatMap { it.votes.flatMap { it } }.distinct().sortedByDescending {
+    var sortedVotes = this.voters.flatMap { it.votes.flatMap { it } }
+    sortedVotes = sortedVotes.distinct()
+    sortedVotes = sortedVotes.sortedByDescending {
         it.victorySum
-    }.fold(mutableListOf<MutableList<Vote>>(), { list, vote ->
+    }
+    val foldedVotes = sortedVotes.fold(mutableListOf<MutableList<Vote>>(), { list, vote ->
         if (list.lastOrNull()?.lastOrNull()?.victorySum == vote.victorySum) {
             list.last().add(vote)
         } else {
@@ -41,7 +42,16 @@ fun InputList.rank(): Result {
         return@fold list
     })
 
-    return Result(temp)
+    val victories = mutableListOf<MutableList<Vote>>()
+
+    foldedVotes.forEachIndexed { i, results ->
+        //Check if we need a second pass
+        if (results.size == 1 && results[0].realVictories.size == foldedVotes.flatMap { it }.size - 1 - i) {
+            victories.add(results)
+        }
+    }
+
+    return Result(victories)
 }
 
 //TODO Om vinnare inte har alla vinster så sitter hen i ett cirkelberoende
@@ -67,10 +77,3 @@ private fun <T> List<List<T>>.compareAllAgainstEachOther(methodToRun: (T, T) -> 
 
 class DoubleVotesException(message: String) : Exception(message)
 class MissingVotesException(message: String) : Exception(message)
-
-fun <T> Iterable<T>.shuffle(seed: Long? = null): List<T> {
-    val list = this.toMutableList()
-    val random = if (seed != null) Random(seed) else Random()
-    Collections.shuffle(list, random)
-    return list
-}
