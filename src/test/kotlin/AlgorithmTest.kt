@@ -93,4 +93,44 @@ class AlgorithmTest {
 
         assertEquals(expectedResult, calculated)
     }
+
+    @Test
+    fun test2() {
+        val a = Vote(UUID.randomUUID().toString(), "A")
+        val b = Vote(UUID.randomUUID().toString(), "B")
+        val c = Vote(UUID.randomUUID().toString(), "C")
+        val d = Vote(UUID.randomUUID().toString(), "D")
+
+
+        val voters = listOf(
+                Voter(listOf(
+                        listOf(a),
+                        listOf(b),
+                        listOf(c),
+                        listOf(d)
+                )),
+                Voter(listOf(
+                        listOf(a),
+                        listOf(b),
+                        listOf(c),
+                        listOf(d)
+                )),
+                Voter(listOf(
+                        listOf(a),
+                        listOf(c),
+                        listOf(b),
+                        listOf(d)
+                )))
+
+        val expectedResult = Result(listOf(
+                listOf(a),
+                listOf(b),
+                listOf(c),
+                listOf(d)
+        ))
+
+        val calculated = InputList(voters).rank()
+
+        assertEquals(expectedResult, calculated)
+    }
 }
