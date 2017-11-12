@@ -33,7 +33,7 @@ val alreadyResolved = mutableListOf<List<Vote>>()
 
 fun List<Vote>.resolve(): List<MutableList<Vote>> {
     val sortedVotes = sortedByDescending {
-        it.victoryAgainst(this)
+        it.realVictoriesAgainst(this).size
     }
 
     //Create a two dimensional array
