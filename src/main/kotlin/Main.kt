@@ -8,8 +8,6 @@ val brown = Vote(UUID.randomUUID().toString(), "Brown")
 val orange = Vote(UUID.randomUUID().toString(), "Orange")
 val banana = Vote(UUID.randomUUID().toString(), "Banana")
 
-val completeList = listOf(blue, red, green, brown, orange, banana)
-
 fun main(args: Array<String>) {
     val firstVoter = Voter(listOf(
             listOf(banana),
@@ -37,8 +35,6 @@ fun main(args: Array<String>) {
             thirdVoter
     ))
 
-
     println(Gson().toJson(inputList).toString())
-
     println(Gson().toJson(inputList.rank()).toString())
 }

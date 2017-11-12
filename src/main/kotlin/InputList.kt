@@ -30,7 +30,6 @@ data class Voter(val votes: List<List<Vote>>) {
         return false
     }
 
-
     private fun flatMapVotes(): List<Vote> {
         return votes.flatMap { it }
     }

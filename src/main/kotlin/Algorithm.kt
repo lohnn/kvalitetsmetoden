@@ -79,13 +79,6 @@ fun List<Vote>.resolve(): List<MutableList<Vote>> {
     return victories
 }
 
-//TODO Om vinnare inte har alla vinster så sitter hen i ett cirkelberoende
-// Detta gäller då även alla nästkommande, måste ha vunnit
-// Om någon saknar något poäng för att ligga på rätt plats:
-// Jämför alla nästkommande och se var cirkelberoendet slutar (slår eller har lika med den felande)
-// Detta görs sedan inom gruppen för att se till att inbördes ordning stämmer, om inte, gör proceduren igen
-// Därefter fortsätter man kontrollen efter gruppen
-
 private fun <T> List<List<T>>.compareAllAgainstEachOther(methodToRun: (T, T) -> Unit) {
     for (index in 0 until this.size - 1) {
         this[index].forEach { vote ->
@@ -98,7 +91,6 @@ private fun <T> List<List<T>>.compareAllAgainstEachOther(methodToRun: (T, T) -> 
         }
     }
 }
-
 
 class DoubleVotesException(message: String) : Exception(message)
 class MissingVotesException(message: String) : Exception(message)
