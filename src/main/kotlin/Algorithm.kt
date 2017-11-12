@@ -38,7 +38,7 @@ fun List<Vote>.resolve(): List<MutableList<Vote>> {
 
     //Create a two dimensional array
     val foldedVotes: List<MutableList<Vote>> = sortedVotes.fold(mutableListOf(), { list, vote ->
-        if (list.lastOrNull()?.lastOrNull()?.victoryAgainst(this) == vote.victoryAgainst(this)) {
+        if (list.lastOrNull()?.lastOrNull()?.realVictoriesAgainst(this)?.size == vote.realVictoriesAgainst(this).size) {
             list.last().add(vote)
         } else {
             list.add(mutableListOf(vote))
@@ -52,7 +52,6 @@ fun List<Vote>.resolve(): List<MutableList<Vote>> {
     }
     alreadyResolved.add(this)
 
-
     val victories = mutableListOf<MutableList<Vote>>()
     val toResolve = mutableListOf<Vote>()
     foldedVotes.forEachIndexed { i, results ->
@@ -60,6 +59,8 @@ fun List<Vote>.resolve(): List<MutableList<Vote>> {
             results.size > 1 -> {
                 //Two votes are on the same place
                 toResolve.addAll(results)
+                victories.addAll(toResolve.resolve())
+                toResolve.clear()
             }
             results[0].realVictoriesAgainst(this).size != foldedVotes.subList(i, foldedVotes.size).flatMap { it }.size - 1 -> {
                 //The vote has not won over all later votes
@@ -67,8 +68,10 @@ fun List<Vote>.resolve(): List<MutableList<Vote>> {
             }
             else -> {
                 //Let's now try to resolve the votes
-                victories.addAll(toResolve.resolve())
-                toResolve.clear()
+                if(toResolve.isNotEmpty()) {
+                    victories.addAll(toResolve.resolve())
+                    toResolve.clear()
+                }
                 victories.add(results)
             }
         }
