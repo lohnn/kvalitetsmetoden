@@ -1,11 +1,15 @@
 data class Vote(val uuid: String, val name: String) {
     val victories = mutableMapOf<Vote, Int>()
-    val victorySum: Int by lazy {
-        victories.map { it.value }.fold(0, { sum, element -> sum + element })
+
+    fun victoryAgainst(currentCompetitors: List<Vote>): Int {
+        return victories.filter { currentCompetitors.contains(it.key) }
+                .map { it.value }
+                .fold(0, { sum, element -> sum + element })
     }
 
-    val realVictories: List<Vote> by lazy {
-        return@lazy victories.map { it.key }
+    fun realVictoriesAgainst(currentCompetitors: List<Vote>): List<Vote> {
+        return victories.filter { currentCompetitors.contains(it.key) }
+                .map { it.key }
                 .filter { other ->
                     victories[other] ?: 0 > other.victories[this] ?: 0
                 }

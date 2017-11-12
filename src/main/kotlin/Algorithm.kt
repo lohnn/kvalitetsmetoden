@@ -21,20 +21,24 @@ fun InputList.rank(): Result {
         }
     }
 
-    this.voters.forEach { voter ->
-        voter.votes.compareAllAgainstEachOther { me, enemy ->
-            val value = me.victories.getOrDefault(enemy, 0)
-            me.victories[enemy] = value.inc()
-        }
+    val votes = voters.flatMap { it.votes }
+    votes.compareAllAgainstEachOther { me, enemy ->
+        val value = me.victories.getOrDefault(enemy, 0)
+        me.victories[enemy] = value.inc()
+    }
+    return Result(votes.flatMap { it }.distinct().resolve())
+}
+
+val alreadyResolved = mutableListOf<List<Vote>>()
+
+fun List<Vote>.resolve(): List<MutableList<Vote>> {
+    val sortedVotes = sortedByDescending {
+        it.victoryAgainst(this)
     }
 
-    var sortedVotes = this.voters.flatMap { it.votes.flatMap { it } }
-    sortedVotes = sortedVotes.distinct()
-    sortedVotes = sortedVotes.sortedByDescending {
-        it.victorySum
-    }
-    val foldedVotes = sortedVotes.fold(mutableListOf<MutableList<Vote>>(), { list, vote ->
-        if (list.lastOrNull()?.lastOrNull()?.victorySum == vote.victorySum) {
+    //Create a two dimensional array
+    val foldedVotes: List<MutableList<Vote>> = sortedVotes.fold(mutableListOf(), { list, vote ->
+        if (list.lastOrNull()?.lastOrNull()?.victoryAgainst(this) == vote.victoryAgainst(this)) {
             list.last().add(vote)
         } else {
             list.add(mutableListOf(vote))
@@ -42,16 +46,37 @@ fun InputList.rank(): Result {
         return@fold list
     })
 
-    val victories = mutableListOf<MutableList<Vote>>()
+    //Check if we have already tried to resolve this, if have; if we have, it means that our votes ARE on the same place
+    if (alreadyResolved.contains(this)) {
+        return foldedVotes
+    }
+    alreadyResolved.add(this)
 
+
+    val victories = mutableListOf<MutableList<Vote>>()
+    val toResolve = mutableListOf<Vote>()
     foldedVotes.forEachIndexed { i, results ->
-        //Check if we need a second pass
-        if (results.size == 1 && results[0].realVictories.size == foldedVotes.flatMap { it }.size - 1 - i) {
-            victories.add(results)
+        when {
+            results.size > 1 -> {
+                //Two votes are on the same place
+                toResolve.addAll(results)
+            }
+            results[0].realVictoriesAgainst(this).size != foldedVotes.subList(i, foldedVotes.size).flatMap { it }.size - 1 -> {
+                //The vote has not won over all later votes
+                toResolve.addAll(results)
+            }
+            else -> {
+                //Let's now try to resolve the votes
+                victories.addAll(toResolve.resolve())
+                toResolve.clear()
+                victories.add(results)
+            }
         }
     }
-
-    return Result(victories)
+    if (toResolve.isNotEmpty()) {
+        victories.addAll(toResolve.resolve())
+    }
+    return victories
 }
 
 //TODO Om vinnare inte har alla vinster så sitter hen i ett cirkelberoende
