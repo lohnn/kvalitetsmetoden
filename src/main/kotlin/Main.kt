@@ -1,40 +1,35 @@
-import com.google.gson.Gson
-import java.util.*
-
-val blue = Vote(UUID.randomUUID().toString(), "Blue")
-val red = Vote(UUID.randomUUID().toString(), "Red")
-val green = Vote(UUID.randomUUID().toString(), "Green")
-val brown = Vote(UUID.randomUUID().toString(), "Brown")
-val orange = Vote(UUID.randomUUID().toString(), "Orange")
-val banana = Vote(UUID.randomUUID().toString(), "Banana")
+import com.fasterxml.jackson.databind.JsonMappingException
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
+import com.xenomachina.argparser.ArgParser
+import com.xenomachina.argparser.SystemExitException
+import java.io.OutputStreamWriter
+import kotlin.system.exitProcess
 
 fun main(args: Array<String>) {
-    val firstVoter = Voter(listOf(
-            listOf(banana),
-            listOf(green),
-            listOf(blue, red, brown, orange)
-    ))
-    val secondVoter = Voter(listOf(
-            listOf(green, red),
-            listOf(blue),
-            listOf(banana, orange),
-            listOf(brown)
-    ))
-    val thirdVoter = Voter(listOf(
-            listOf(blue),
-            listOf(red),
-            listOf(green),
-            listOf(brown),
-            listOf(orange),
-            listOf(banana)
-    ))
+    val parser = ArgParser(args)
 
-    val inputList = InputList(listOf(
-            firstVoter,
-            secondVoter,
-            thirdVoter
-    ))
+    val jackson = jacksonObjectMapper()
 
-    println(Gson().toJson(inputList).toString())
-    println(Gson().toJson(inputList.rank()).toString())
+    try {
+        ParsedArgs(parser).run {
+            parser.force()
+
+            val inputList = jackson.readValue<InputList>(input)
+            println(jackson.writeValueAsString(inputList.rank()))
+        }
+    } catch (e: SystemExitException) {
+        e.printAndExit()
+    } catch (e: JsonMappingException) {
+        exitMalformedParameter()
+    } catch (e: IllegalArgumentException) {
+        exitMalformedParameter()
+    }
+}
+
+private fun exitMalformedParameter() {
+    val writer = OutputStreamWriter(System.err)
+    writer.write("Input parameter malformed")
+    writer.flush()
+    exitProcess(3)
 }

@@ -1,5 +1,8 @@
+import com.fasterxml.jackson.annotation.JsonIgnore
+
 data class Vote(val uuid: String, val name: String) {
-    val victories = mutableMapOf<Vote, Int>()
+    @get:JsonIgnore
+    val victories by lazy { mutableMapOf<Vote, Int>() }
 
     fun realVictoriesAgainst(currentCompetitors: List<Vote>): List<Vote> {
         return victories.filter { currentCompetitors.contains(it.key) }

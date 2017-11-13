@@ -2,15 +2,13 @@
   "result": [
     [
       {
-        "uuid": "181e030e-33b8-4cdd-8857-91315c875095",
-        "name": "Blue"
+        "uuid": "496a100a-be79-466b-b33d-b2dca1dffebd",
+        "name": "Banana"
       },
       {
         "uuid": "69bb8911-0960-4d5e-ae1a-f934cd786842",
         "name": "Green"
-      }
-    ],
-    [
+      },
       {
         "uuid": "d2520fde-8ff2-4e1c-9535-d5de542975f7",
         "name": "Red"
@@ -18,8 +16,8 @@
     ],
     [
       {
-        "uuid": "496a100a-be79-466b-b33d-b2dca1dffebd",
-        "name": "Banana"
+        "uuid": "181e030e-33b8-4cdd-8857-91315c875095",
+        "name": "Blue"
       }
     ],
     [
