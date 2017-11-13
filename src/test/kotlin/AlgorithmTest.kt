@@ -742,4 +742,121 @@ class AlgorithmTest {
 
         assertEquals(expectedResult, calculated)
     }
+
+    @Test
+    fun test8() {
+        val k1 = Vote(UUID.randomUUID().toString(), "K1")
+        val k2 = Vote(UUID.randomUUID().toString(), "k2")
+        val k3 = Vote(UUID.randomUUID().toString(), "k3")
+        val k4 = Vote(UUID.randomUUID().toString(), "k4")
+        val k5 = Vote(UUID.randomUUID().toString(), "k5")
+        val k6 = Vote(UUID.randomUUID().toString(), "k6")
+        val k7 = Vote(UUID.randomUUID().toString(), "k7")
+        val k8 = Vote(UUID.randomUUID().toString(), "k8")
+
+        val allCandidates = listOf(
+                k1,
+                k2,
+                k3,
+                k4,
+                k5,
+                k6,
+                k7,
+                k8
+        )
+
+        val voters = listOf(
+                //1
+                Voter(listOf(
+                        listOf(k1),
+                        listOf(k8),
+                        listOf(k7)
+                ).addMissingToLast(allCandidates)),
+                //2
+                Voter(listOf(
+                        listOf(k7)
+                ).addMissingToLast(allCandidates)),
+                //3
+                Voter(listOf(
+                        listOf(k7),
+                        listOf(k8)
+                ).addMissingToLast(allCandidates)),
+                //4
+                Voter(listOf(
+                        listOf(k2),
+                        listOf(k8),
+                        listOf(k7),
+                        listOf(k6),
+                        listOf(k4),
+                        listOf(k1),
+                        listOf(k5),
+                        listOf(k3)
+                ).addMissingToLast(allCandidates)),
+                //5
+                Voter(listOf(
+                        listOf(k2),
+                        listOf(k4),
+                        listOf(k6)
+                ).addMissingToLast(allCandidates)),
+                //6
+                Voter(listOf(
+                        listOf(k5),
+                        listOf(k1),
+                        listOf(k8),
+                        listOf(k4),
+                        listOf(k2)
+                ).addMissingToLast(allCandidates)),
+                //7
+                Voter(listOf(
+                        listOf(k7),
+                        listOf(k8)
+                ).addMissingToLast(allCandidates)),
+                //8
+                Voter(listOf(
+                        listOf(k8),
+                        listOf(k7)
+                ).addMissingToLast(allCandidates)),
+                //9
+                Voter(listOf(
+                        listOf(k4),
+                        listOf(k3),
+                        listOf(k1),
+                        listOf(k5)
+                ).addMissingToLast(allCandidates)),
+                //10
+                Voter(listOf(
+                        listOf(k7)
+                ).addMissingToLast(allCandidates)),
+                //11
+                Voter(listOf(
+                        listOf(k7)
+                ).addMissingToLast(allCandidates)),
+                //12
+                Voter(listOf(
+                        listOf(k8)
+                ).addMissingToLast(allCandidates)),
+                //13
+                Voter(listOf(
+                        listOf(k8)
+                ).addMissingToLast(allCandidates)),
+                //14
+                Voter(listOf(
+                        listOf(k8)
+                ).addMissingToLast(allCandidates))
+        )
+
+        val expectedResult = Result(listOf(
+                listOf(k8),
+                listOf(k7),
+                listOf(k4),
+                listOf(k1),
+                listOf(k2),
+                listOf(k5, k6),
+                listOf(k3)
+        ))
+
+        val calculated = InputList(voters).rank()
+
+        assertEquals(expectedResult, calculated)
+    }
 }
