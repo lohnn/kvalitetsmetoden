@@ -19,6 +19,16 @@ repositories {
     jcenter()
 }
 
+jar {
+    manifest {
+        attributes 'Main-Class': 'MainKt'
+    }
+    // This line of code recursively collects and copies all of a project's files
+    // and adds them to the JAR itself. One can extend this task, to skip certain
+    // files or particular types at will
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+}
+
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
     compile "com.fasterxml.jackson.module:jackson-module-kotlin:2.9.0"
