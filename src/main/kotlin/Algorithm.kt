@@ -1,3 +1,6 @@
+import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.experimental.runBlocking
+
 fun InputList.rank(): Result {
     //Check that we have more than one voters
     if (this.voters.size <= 1) {
@@ -22,7 +25,7 @@ fun InputList.rank(): Result {
     }
 
     val votes = voters.flatMap { it.votes }
-    votes.compareAllAgainstEachOther { me, enemy ->
+    votes.compareAllAgainstEachOtherAsyncBlocking { me, enemy ->
         val value = me.victories.getOrDefault(enemy, 0)
         me.victories[enemy] = value.inc()
     }
@@ -32,13 +35,22 @@ fun InputList.rank(): Result {
 val alreadyResolved = mutableListOf<List<Vote>>()
 
 fun List<Vote>.resolve(): List<MutableList<Vote>> {
+    runBlocking {
+        val jobs = this@resolve.map {
+            launch {
+                it.realVictoriesAgainst(this@resolve)
+            }
+        }
+        jobs.forEach { it.join() }
+    }
+
     val sortedVotes = sortedByDescending {
-        it.realVictoriesAgainst(this).size
+        it.realVictoriesAgainst(this)
     }
 
     //Create a two dimensional array
     val foldedVotes: List<MutableList<Vote>> = sortedVotes.fold(mutableListOf(), { list, vote ->
-        if (list.lastOrNull()?.lastOrNull()?.realVictoriesAgainst(this)?.size == vote.realVictoriesAgainst(this).size) {
+        if (list.lastOrNull()?.lastOrNull()?.realVictoriesAgainst(this) == vote.realVictoriesAgainst(this)) {
             list.last().add(vote)
         } else {
             list.add(mutableListOf(vote))
@@ -62,13 +74,13 @@ fun List<Vote>.resolve(): List<MutableList<Vote>> {
                 victories.addAll(toResolve.resolve())
                 toResolve.clear()
             }
-            results[0].realVictoriesAgainst(this).size != foldedVotes.subList(i, foldedVotes.size).flatMap { it }.size - 1 -> {
+            results[0].realVictoriesAgainst(this) != foldedVotes.subList(i, foldedVotes.size).flatMap { it }.size - 1 -> {
                 //The vote has not won over all later votes
                 toResolve.addAll(results)
             }
             else -> {
                 //Let's now try to resolve the votes
-                if(toResolve.isNotEmpty()) {
+                if (toResolve.isNotEmpty()) {
                     victories.addAll(toResolve.resolve())
                     toResolve.clear()
                 }
@@ -82,16 +94,25 @@ fun List<Vote>.resolve(): List<MutableList<Vote>> {
     return victories
 }
 
-private fun <T> List<List<T>>.compareAllAgainstEachOther(methodToRun: (T, T) -> Unit) {
-    for (index in 0 until this.size - 1) {
-        this[index].forEach { vote ->
-            for (index2 in index + 1 until this.size) {
-                val me = vote
-                this[index2].forEach { enemy ->
-                    methodToRun(me, enemy)
+private fun <T> List<List<T>>.compareAllAgainstEachOtherAsyncBlocking(methodToRun: (T, T) -> Unit) {
+    val thisList = this
+    runBlocking {
+        val outerJobs = (0 until thisList.size - 1).map { index ->
+            launch {
+                val innerJobs = thisList[index].map { vote ->
+                    launch {
+                        (index + 1 until thisList.size).map { index2 ->
+                            val me = vote
+                            thisList[index2].forEach { enemy ->
+                                methodToRun(me, enemy)
+                            }
+                        }
+                    }
                 }
+                innerJobs.forEach { it.join() }
             }
         }
+        outerJobs.forEach { it.join() }
     }
 }
 
