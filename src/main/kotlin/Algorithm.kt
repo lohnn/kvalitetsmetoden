@@ -26,8 +26,10 @@ fun InputList.rank(): Result {
 
     val votes = voters.flatMap { it.votes }
     votes.compareAllAgainstEachOtherAsyncBlocking { me, enemy ->
-        val value = me.victories.getOrDefault(enemy, 0)
-        me.victories[enemy] = value.inc()
+        synchronized(me) {
+            val value = me.victories.getOrDefault(enemy, 0)
+            me.victories[enemy] = value.inc()
+        }
     }
     return Result(votes.flatMap { it }.distinct().resolve())
 }
