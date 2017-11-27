@@ -101,17 +101,13 @@ private fun <T> List<List<T>>.compareAllAgainstEachOtherAsyncBlocking(methodToRu
     runBlocking {
         val outerJobs = (0 until thisList.size - 1).map { index ->
             launch {
-                val innerJobs = thisList[index].map { vote ->
-                    launch {
-                        (index + 1 until thisList.size).map { index2 ->
-                            val me = vote
-                            thisList[index2].forEach { enemy ->
-                                methodToRun(me, enemy)
-                            }
+                thisList[index].map { me ->
+                    (index + 1 until thisList.size).map { index2 ->
+                        thisList[index2].forEach { enemy ->
+                            methodToRun(me, enemy)
                         }
                     }
                 }
-                innerJobs.forEach { it.join() }
             }
         }
         outerJobs.forEach { it.join() }
