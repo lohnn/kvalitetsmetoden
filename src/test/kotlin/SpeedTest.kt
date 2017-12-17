@@ -9,12 +9,11 @@ class SpeedTest {
         private val candidates100 = createRandomCandidates(100)
         private val voters100x100 = voteRandom(candidates100, 100)
 
-        private val candidates1000 = createRandomCandidates(1000)
+
+//        private val candidates1000 = createRandomCandidates(1000)
 //        private val voters100x1000 = voteRandom(candidates100, 1000)
 //        private val voters1000x100 = voteRandom(candidates1000, 100)
 //        private val voters1000x1000 = voteRandom(candidates1000, 1000)
-
-        private val voters365x5_000_000 = voteRandom(createRandomCandidates(365), 5_000_000)
 
         private fun voteRandom(candidates: List<List<Vote>>, amount: Int): List<Voter> {
             return (0 until amount)
@@ -37,6 +36,36 @@ class SpeedTest {
         InputList(voters100x100).rank()
     }
 
+    @Test
+    fun test50x4() {
+        val voters50x40000 = voteRandom(createRandomCandidates(50), 4)
+        InputList(voters50x40000).rank()
+    }
+
+    @Test
+    fun test50x40() {
+        val voters50x40000 = voteRandom(createRandomCandidates(50), 40)
+        InputList(voters50x40000).rank()
+    }
+
+    @Test
+    fun test50x400() {
+        val voters50x40000 = voteRandom(createRandomCandidates(50), 400)
+        InputList(voters50x40000).rank()
+    }
+
+    @Test
+    fun test50x4000() {
+        val voters50x40000 = voteRandom(createRandomCandidates(50), 4_000)
+        InputList(voters50x40000).rank()
+    }
+
+    @Test
+    fun test50x40000() {
+        val voters50x40000 = voteRandom(createRandomCandidates(50), 4_0000)
+        InputList(voters50x40000).rank()
+    }
+
     //2:20:157
     //2:14:783
     //c: 51:342
@@ -49,11 +78,6 @@ class SpeedTest {
 //    fun test1000x100() {
 //        InputList(voters100x1000).rank()
 //    }
-
-    @Test
-    fun test365x5000000() {
-        InputList(voters365x5_000_000).rank()
-    }
 
 //    @Test(timeout = 1000 * 10 * 60)
 //    fun test1000x1000() {
