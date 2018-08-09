@@ -14,4 +14,7 @@ class ParsedArgs(parser: ArgParser) {
 
     val outputFile by parser.storing("-d", "--destination",
             help = "Destination file") { File(this) }.default<File?>(null)
+
+    val outputExpected by parser.storing("-e", "--expected",
+            help = "Expected value").default<String?>(null)
 }

@@ -17,8 +17,8 @@ fun main(args: Array<String>) {
             parser.force()
 
             if (validate) {
-                val inputList = jackson.readValue<InputList>(inputFile!!.readText())
-                val outputRank = jackson.readValue<Result>(outputFile!!.readText())
+                val inputList = jackson.readValue<InputList>(getText(input, inputFile))
+                val outputRank = jackson.readValue<Result>(getText(outputExpected, outputFile))
 
                 if (inputList.rank() == outputRank) {
                     println("True")
@@ -37,7 +37,7 @@ fun main(args: Array<String>) {
                     exitProcess(1)
                 }
 
-                getInput(input, inputFile).let {
+                getText(input, inputFile).let {
                     val inputList = jackson.readValue<InputList>(it)
                     output(outputFile) { jackson.writeValueAsString(inputList.rank()) }
                 }
@@ -59,8 +59,8 @@ fun output(outputFile: File?, function: () -> String) {
     } ?: run { println(function()) }
 }
 
-fun getInput(input: String?, inputFile: File?): String {
-    return input ?: inputFile?.readText() ?: ""
+fun getText(text: String?, file: File?): String {
+    return text ?: file?.readText() ?: ""
 }
 
 private fun exitMalformedParameter() {
