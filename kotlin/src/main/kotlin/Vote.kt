@@ -1,20 +1,17 @@
 import com.fasterxml.jackson.annotation.JsonIgnore
 
 data class Vote(val uuid: String, val name: String) {
-    private val realVictoriesCache = mutableMapOf<List<Vote>, Int>()
-
     @get:JsonIgnore
     val victories by lazy { mutableMapOf<Vote, Int>() }
 
     fun realVictoriesAgainst(currentCompetitors: List<Vote>): Int {
-        return realVictoriesCache.getOrPut(currentCompetitors) {
-            victories.filter { currentCompetitors.contains(it.key) }
-                    .map { it.key }
-                    .filter { other ->
-                        victories[other] ?: 0 > other.victories[this] ?: 0
-                    }.size
-        }
+        return victories.filter { currentCompetitors.contains(it.key) }
+                .map { it.key }
+                .filter { other ->
+                    victories[other] ?: 0 > other.victories[this] ?: 0
+                }.size
     }
+}
 
 }
 

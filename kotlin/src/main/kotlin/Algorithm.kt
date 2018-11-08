@@ -51,14 +51,14 @@ fun List<Vote>.resolve(): List<MutableList<Vote>> {
     }
 
     //Create a two dimensional array
-    val foldedVotes: List<MutableList<Vote>> = sortedVotes.fold(mutableListOf(), { list, vote ->
-        if (list.lastOrNull()?.lastOrNull()?.realVictoriesAgainst(this) == vote.realVictoriesAgainst(this)) {
+    val foldedVotes: List<MutableList<Vote>> = sortedVotes.fold(mutableListOf()) { list, vote ->
+        if (list.asSequence().lastOrNull()?.lastOrNull()?.realVictoriesAgainst(this) == vote.realVictoriesAgainst(this)) {
             list.last().add(vote)
         } else {
             list.add(mutableListOf(vote))
         }
         return@fold list
-    })
+    }
 
     //Check if we have already tried to resolve this, if have; if we have, it means that our votes ARE on the same place
     if (alreadyResolved.contains(this)) {
