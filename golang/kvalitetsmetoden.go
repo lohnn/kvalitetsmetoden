@@ -1,36 +1,22 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"sort"
+	"strconv"
 )
 
 func calc(inputList InputList) (Result, error) {
-	//Check if too few voters
-	if len(inputList.Voters) < 1 {
-		return Result{}, errors.New("must have at least one vote in voting")
+	fmt.Println(strconv.Itoa(len(inputList.Voters[0].flattenVotes())) + "x" + strconv.Itoa(len(inputList.Voters)))
+
+	e := inputList.validate()
+	if e != nil {
+		return Result{}, e
 	}
 
-	//Quickly return if just one voter
+	//Only one voter, let's just return
 	if len(inputList.Voters) == 1 {
 		return Result{inputList.Voters[0].Votes}, nil
-	}
-
-	//Check if any voter has double votes
-	for _, voter := range inputList.Voters {
-		if voter.hasDoubles() {
-			return Result{}, errors.New("voters cannot vote two times at the same item")
-		}
-	}
-
-	for i := 1; i < len(inputList.Voters); i++ {
-		first := inputList.Voters[i-1]
-		second := inputList.Voters[i]
-
-		if first.missesVotes(second) {
-			return Result{}, errors.New(fmt.Sprintf("someone forgot to vote for all alternatives:\nfirst:  %1v\nsecond: %2v", first, second))
-		}
 	}
 
 	compareAllAgainstEachOther(inputList)
@@ -89,43 +75,6 @@ func (vote Vote) victoriesAgainstGroup(votes []Vote) int {
 type VictoryPair struct {
 	Me    Vote
 	Other Vote
-}
-
-func (voter Voter) hasDoubles() bool {
-	votes := voter.flattenVotes()
-	for i, vote := range votes {
-		if vote.existsInList(votes[i+1:]) {
-			return true
-		}
-	}
-
-	return false
-}
-
-func (voter Voter) missesVotes(other Voter) bool {
-	myVotes := voter.flattenVotes()
-	otherVotes := other.flattenVotes()
-
-	if len(myVotes) != len(otherVotes) {
-		return true
-	}
-
-	for _, myVote := range myVotes {
-		if !myVote.existsInList(otherVotes) {
-			return true
-		}
-	}
-
-	return false
-}
-
-func (vote Vote) existsInList(votes []Vote) bool {
-	for _, v := range votes {
-		if v == vote {
-			return true
-		}
-	}
-	return false
 }
 
 func (voter Voter) flattenVotes() []Vote {
