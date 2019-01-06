@@ -25,6 +25,36 @@ func calc(inputList InputList) (Result, error) {
 	return Result{resolved}, nil
 }
 
+func compareAllAgainstEachOther(list InputList) map[VictoryPair]int {
+	victoriesAgainst := make(map[VictoryPair]int)
+
+	//Going through all the voters
+	//_ = voterIndex
+	var voter Voter
+	var sameVoteIndex int
+	var sameVotes, lowerVotes []Vote
+	var myVote, otherVote Vote
+	for _, voter = range list.Voters {
+		//Going going through the sortings of the votes
+		for sameVoteIndex, sameVotes = range voter.Votes {
+			//Going through the votes on the same place
+			//_ = currentVoteIndex
+			for _, myVote = range sameVotes {
+				//Comparing this vote against all other votes that are on a lower place than this
+				lowerVotes = flattenVotes(voter.Votes[sameVoteIndex+1:])
+				//_ = otherVoteIndex
+				for _, otherVote = range lowerVotes {
+					pair := VictoryPair{myVote, otherVote} //TODO: better
+					victoriesAgainst[pair]++
+				}
+			}
+		}
+	}
+
+	fmt.Println(len(victoriesAgainst))
+	return victoriesAgainst
+}
+
 //TODO: Sort after compared
 func resolve(votes []Vote) [][]Vote {
 	sort.Slice(votes, func(i, j int) bool {
@@ -37,35 +67,7 @@ func resolve(votes []Vote) [][]Vote {
 	//Create a two dimensional array, where votes that has the same realVictoriesAgainstGroup as
 	//each other gets put in the same place.
 
-
-
 	return [][]Vote{{votes[0]}}
-}
-
-func compareAllAgainstEachOther(list InputList) map[VictoryPair]int {
-	victoriesAgainst := make(map[VictoryPair]int)
-
-	//Going through all the voters
-	//_ = voterIndex
-	for _, voter := range list.Voters {
-		//Going going through the sortings of the votes
-		for sameVoteIndex, sameVotes := range voter.Votes {
-			//Going through the votes on the same place
-			//_ = currentVoteIndex
-			for _, myVote := range sameVotes {
-				//Comparing this vote against all other votes that are on a lower place than this
-				lowerVotes := flattenVotes(voter.Votes[sameVoteIndex+1:])
-				//_ = otherVoteIndex
-				for _, otherVote := range lowerVotes {
-					pair := VictoryPair{myVote, otherVote}
-					victoriesAgainst[pair]++
-				}
-			}
-		}
-	}
-	fmt.Println(victoriesAgainst)
-	fmt.Println(len(victoriesAgainst))
-	return victoriesAgainst
 }
 
 func (vote Vote) victoriesAgainstGroup(votes []Vote) int {
@@ -82,8 +84,8 @@ func (voter Voter) flattenVotes() []Vote {
 }
 
 func flattenVotes(votesList [][]Vote) []Vote {
-	var votes []Vote
-	for _, voteArray := range votesList {
+	var votes, voteArray []Vote
+	for _, voteArray = range votesList {
 		votes = append(votes, voteArray...)
 	}
 	return votes
