@@ -5,11 +5,46 @@ import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.SystemExitException
 import java.io.File
 import java.io.OutputStreamWriter
+import java.util.Random
+import java.util.UUID
 import kotlin.system.exitProcess
 
-fun main(args: Array<String>) {
-    val parser = ArgParser(args)
+val rg: Random = Random()
+private fun <E> List<E>.randomOrder(): List<E> {
+    val items = this.toMutableList()
+    for (i in 0 until items.size) {
+        val randomPosition = rg.nextInt(items.size)
+        val tmp: E = items[i]
+        items[i] = items[randomPosition]
+        items[randomPosition] = tmp
+    }
+    return items
+}
 
+private fun voteRandom(candidates: List<List<Vote>>, amount: Int): List<Voter> {
+    return (0 until amount)
+            .map {
+                Voter(candidates.randomOrder())
+            }
+}
+
+private fun createRandomCandidates(amount: Int): List<List<Vote>> {
+    return (0 until amount)
+            .map { listOf(Vote(UUID.randomUUID().toString(), it.toString())) }
+}
+
+fun main(args: Array<String>) {
+    val random = voteRandom(createRandomCandidates(349), 4_000_000)
+    val inputList = InputList(random)
+    val bytes = jacksonObjectMapper().writeValueAsBytes(inputList)
+    val file = File("test9_in.json")
+    if(file.exists()) {
+        file.delete()
+    }
+    file.writeBytes(bytes)
+    exitProcess(0)
+
+    val parser = ArgParser(args)
     val jackson = jacksonObjectMapper()
 
     try {
@@ -29,7 +64,7 @@ fun main(args: Array<String>) {
                 }
             } else {
                 if (input != null && inputFile != null) {
-                    println("Decide wether to use input or input file...")
+                    println("Decide whether to use input or input file...")
                     exitProcess(1)
                 }
                 if (input == null && inputFile == null) {

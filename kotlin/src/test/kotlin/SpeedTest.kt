@@ -9,12 +9,6 @@ class SpeedTest {
         private val candidates100 = createRandomCandidates(100)
         private val voters100x100 = voteRandom(candidates100, 100)
 
-
-//        private val candidates1000 = createRandomCandidates(1000)
-//        private val voters100x1000 = voteRandom(candidates100, 1000)
-//        private val voters1000x100 = voteRandom(candidates1000, 100)
-//        private val voters1000x1000 = voteRandom(candidates1000, 1000)
-
         private fun voteRandom(candidates: List<List<Vote>>, amount: Int): List<Voter> {
             return (0 until amount)
                     .map {

@@ -5,30 +5,30 @@ import (
 	"fmt"
 )
 
-func (inputList InputList) validate() error {
+func (list InputList) validate() error {
 	//Check if too few voters
-	if len(inputList.Voters) < 1 {
+	if len(list.Voters) < 1 {
 		return errors.New("must have at least one vote in voting")
 	}
 	fmt.Println("At least all voters has voted something")
 
 	//Quickly return if just one voter
-	if len(inputList.Voters) == 1 {
+	if len(list.Voters) == 1 {
 		return nil
 	}
 	fmt.Println("More than one voter... Nice")
 
 	//Check if any voter has double votes
-	for _, voter := range inputList.Voters {
+	for _, voter := range list.Voters {
 		if voter.hasDoubles() {
 			return errors.New("voters cannot vote two times at the same item")
 		}
 	}
 	fmt.Println("Well, all voters has made sure to not have duplicates")
 
-	for i := 1; i < len(inputList.Voters); i++ {
-		first := inputList.Voters[i-1]
-		second := inputList.Voters[i]
+	for i := 1; i < len(list.Voters); i++ {
+		first := list.Voters[i-1]
+		second := list.Voters[i]
 
 		if first.missesVotes(second) {
 			return errors.New(fmt.Sprintf("someone forgot to vote for all alternatives:\nfirst:  %1v\nsecond: %2v", first, second))

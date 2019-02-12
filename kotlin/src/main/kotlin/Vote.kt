@@ -13,8 +13,6 @@ data class Vote(val uuid: String, val name: String) {
     }
 }
 
-}
-
 fun <T> printTimeAndReturn(message: String? = "", function: () -> T): T {
     measureTimeMillis { }
     val (toReturn, time) = measureTimeMillis { function() }

@@ -10,7 +10,7 @@ class ParsedArgs(parser: ArgParser) {
     val inputFile by parser.storing("-s", "--source",
             help = "Source file") { File(this) }.default<File?>(null)
 
-    val input by parser.storing(names = "-i", help = "Input your votes here in a json format").default<String?>(null)
+    val input by parser.storing(names = *arrayOf("-i"), help = "Input your votes here in a json format").default<String?>(null)
 
     val outputFile by parser.storing("-d", "--destination",
             help = "Destination file") { File(this) }.default<File?>(null)

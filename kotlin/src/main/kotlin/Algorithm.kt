@@ -1,5 +1,5 @@
-import kotlinx.coroutines.experimental.launch
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 fun InputList.rank(): Result {
     //Check that we have more than one voters
@@ -31,7 +31,7 @@ fun InputList.rank(): Result {
             me.victories[enemy] = value.inc()
         }
     }
-    return Result(votes.flatMap { it }.distinct().resolve())
+    return Result(votes.flatten().distinct().resolve())
 }
 
 val alreadyResolved = mutableListOf<List<Vote>>()
