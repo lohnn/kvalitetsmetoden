@@ -17,7 +17,7 @@ func calc(inputList InputList) (Result, error) {
 
 	newList := inputList.convertToNew()
 	newResult := newList.compareAllAgainstEachOther()
-	oldResult := inputList.compareAllAgainstEachOther()
+	oldResult := inputList.compareAllAgainstEachOtherOld()
 
 	hasSameOutput := NewResultCompareObject{
 		NewVotes:     newResult,
@@ -30,7 +30,8 @@ func calc(inputList InputList) (Result, error) {
 		println("Oh noes... We did not have the same output!")
 	}
 
-	resolved := resolve(inputList.Voters[0].flattenVotes())
+	resolved := resolve(newList.Candidates, newResult)
+	//mapped := resolved.mapToVotes(newList.Candidates)
 	return Result{resolved}, nil
 }
 
@@ -90,7 +91,7 @@ func (newResult NewResultCompareObject) compare(oldResult map[VictoryPair]int) b
 	return true
 }
 
-func (list InputList) compareAllAgainstEachOther() map[VictoryPair]int {
+func (list InputList) compareAllAgainstEachOtherOld() map[VictoryPair]int {
 	var start = time.Now()
 	victoriesAgainst := make(map[VictoryPair]int)
 
@@ -124,23 +125,50 @@ func (list InputList) compareAllAgainstEachOther() map[VictoryPair]int {
 	return victoriesAgainst
 }
 
+//TODO: Check already resolved to avoid infinite loops
+//var alreadyResolved NewVotes
+
 //TODO: Sort after compared
-func resolve(votes []Vote) [][]Vote {
-	sort.Slice(votes, func(i, j int) bool {
+func resolve(votes []Vote, result NewVotes) [][]Vote {
+	sortedVoteIndexes := make([]int, len(votes))
+	for i := range votes {
+		sortedVoteIndexes[i] = i
+	}
+
+	sort.Slice(sortedVoteIndexes, func(i, j int) bool {
 		thisVote := votes[i]
 		otherVote := votes[j]
 
-		return thisVote.victoriesAgainstGroup(votes) > otherVote.victoriesAgainstGroup(votes)
+		println(thisVote.Name + " : " + otherVote.Name)
+
+		return result[i][j] > result[j][i]
 	})
+
+	//TODO: Stop right here if we already have tried resolving this exact list of votes
+	//alreadyResolved.contains(votes) -> return
+
+	//var needsResolving []ResolveRange
+
+	//Fold votes into two dimensional slice
+	var folded [][]Vote
+	for i := 1; i < len(votes); i++ {
+		if result[i][i-1] == result[i-1][i] {
+			//TODO: Make sure we have something in the slice already
+			folded[len(folded)-1] = append(folded[len(folded)-1], votes[i])
+		} else {
+			folded = append(folded, []Vote{votes[i]})
+		}
+	}
 
 	//Create a two dimensional array, where votes that has the same realVictoriesAgainstGroup as
 	//each other gets put in the same place.
 
-	return [][]Vote{{votes[0]}}
+	return folded
 }
 
-func (vote Vote) victoriesAgainstGroup(votes []Vote) int {
-	return 1
+type ResolveRange struct {
+	From int
+	To   int
 }
 
 type VictoryPair struct {

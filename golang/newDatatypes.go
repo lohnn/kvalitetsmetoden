@@ -10,6 +10,26 @@ func (votesList NewVotes) flatten() []int {
 	return votes
 }
 
+func (votesList NewVotes) mapToVotes(voteList VoteList) [][]Vote {
+	var returnList [][]Vote
+
+	for _, outer := range votesList {
+		returnList = append(returnList, mapToVotes(outer, voteList))
+	}
+
+	return returnList
+}
+
+func mapToVotes(outer []int, voteList VoteList) []Vote {
+	var returnList []Vote
+
+	for _, voteIndex := range outer {
+		returnList = append(returnList, voteList[voteIndex])
+	}
+
+	return returnList
+}
+
 type NewVoter struct {
 	Votes NewVotes `json:"votes"`
 }
@@ -19,8 +39,6 @@ type NewInputList struct {
 	Voters     []NewVoter `json:"votes"`
 	InverseMap map[int]Vote
 }
-
-type NewResult [][]int
 
 func (list InputList) convertToNew() NewInputList {
 	temp := list.Voters[0].flattenVotes()
