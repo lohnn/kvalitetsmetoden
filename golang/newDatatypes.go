@@ -35,9 +35,11 @@ type NewVoter struct {
 }
 
 type NewInputList struct {
-	Candidates VoteList   `json:"candidates"`
-	Voters     []NewVoter `json:"votes"`
-	InverseMap map[int]Vote
+	//Candidates in the voting, zero indexed, referenced as indexes in Voters
+	Candidates VoteList `json:"candidates"`
+	//Voting, list of list, uses indexes for referencing candidates
+	Voters     []NewVoter   `json:"votes"`
+	InverseMap map[int]Vote `json:"-"`
 }
 
 func (list InputList) convertToNew() NewInputList {

@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func calc(inputList InputList) (Result, error) {
+func calcLegacy(inputList InputList) (Result, error) {
 	fmt.Println(strconv.Itoa(len(inputList.Voters[0].flattenVotes())) + "x" + strconv.Itoa(len(inputList.Voters)))
 
 	//Only one voter, let's just return
@@ -32,6 +32,14 @@ func calc(inputList InputList) (Result, error) {
 
 	resolved := resolve(newList.Candidates, newResult)
 	//mapped := resolved.mapToVotes(newList.Candidates)
+	return Result{resolved}, nil
+}
+func calc(inputList NewInputList) (Result, error) {
+	fmt.Println(strconv.Itoa(len(inputList.Candidates)) + "x" + strconv.Itoa(len(inputList.Voters)))
+
+	newResult := inputList.compareAllAgainstEachOther()
+	resolved := resolve(inputList.Candidates, newResult)
+
 	return Result{resolved}, nil
 }
 

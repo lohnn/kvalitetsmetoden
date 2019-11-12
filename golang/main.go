@@ -11,13 +11,21 @@ import (
 func main() {
 	var start = time.Now()
 	var file = strconv.Itoa(1)
-	var il InputList
+	var il NewInputList
 	var readFile = "test_files/test" + file + "_in.json"
 	fmt.Println("Reading from file " + readFile)
 	bytes, e := ioutil.ReadFile(readFile)
 	check(e)
 	json.Unmarshal(bytes, &il)
 	fmt.Println("Finished reading JSON")
+
+	//newList := il.convertToNew()
+	//resultJson, e := json.Marshal(newList)
+	//check(e)
+	//var writeFile = "test_files/test" + file + "_in.json"
+	//e = ioutil.WriteFile(writeFile, resultJson, 0644)
+	//fmt.Println("Writing to file " + writeFile)
+	//check(e)
 
 	result, e := calc(il)
 	check(e)
@@ -27,6 +35,7 @@ func main() {
 	e = ioutil.WriteFile(writeFile, resultJson, 0644)
 	fmt.Println("Writing to file " + writeFile)
 	check(e)
+
 	var elapsed = time.Now().Sub(start)
 	fmt.Println("Operation took " + elapsed.String())
 	fmt.Println()
