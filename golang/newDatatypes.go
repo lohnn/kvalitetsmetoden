@@ -1,8 +1,8 @@
 package main
 
-type NewVotes [][]int
+type NewVote [][]int
 
-func (votesList NewVotes) flatten() []int {
+func (votesList NewVote) flatten() []int {
 	var votes, voteArray []int
 	for _, voteArray = range votesList {
 		votes = append(votes, voteArray...)
@@ -10,7 +10,7 @@ func (votesList NewVotes) flatten() []int {
 	return votes
 }
 
-func (votesList NewVotes) mapToVotes(voteList VoteList) [][]Vote {
+func (votesList NewVote) mapToVotes(voteList VoteList) [][]Vote {
 	var returnList [][]Vote
 
 	for _, outer := range votesList {
@@ -31,16 +31,50 @@ func mapToVotes(outer []int, voteList VoteList) []Vote {
 }
 
 type NewVoter struct {
-	Votes NewVotes `json:"votes"`
+	Votes NewVote `json:"vote"`
 }
 
 type NewInputList struct {
-	//Candidates in the voting, zero indexed, referenced as indexes in Voters
+	//Candidates in the voting, zero indexed, referenced as indexes in Votes
 	Candidates VoteList `json:"candidates"`
 	//Voting, list of list, uses indexes for referencing candidates
-	Voters     []NewVoter   `json:"votes"`
+	Votes      []NewVoter   `json:"votes"`
 	InverseMap map[int]Vote `json:"-"`
 }
+
+type NewInputListJson struct {
+	Candidates VoteList		`json:"candidates"`
+	Votes      [][][]int	`json:"votes"`
+}
+
+func (list InputList) convertToNewJson() NewInputListJson {
+	temp := list.Voters[0].flattenVotes()
+	voteMap := temp.mapVotes()
+
+	newVoters := make([][][]int, len(list.Voters))
+	for voterIndex, voter := range list.Voters {
+		newVotes := make([][]int, len(voter.Votes))
+		for voteIndex, vote := range voter.Votes {
+			newInnerVotes := make([]int, len(vote))
+			for candidateIndex, candidate := range vote {
+				newInnerVotes[candidateIndex] = voteMap[candidate]
+			}
+			newVotes[voteIndex] = newInnerVotes
+		}
+		newVoters[voterIndex] = newVotes
+	}
+
+	inverseMap := make(map[int]Vote)
+	for k, v := range voteMap {
+		inverseMap[v] = k
+	}
+
+	return NewInputListJson{
+		Candidates: temp,
+		Votes:      newVoters,
+	}
+}
+
 
 func (list InputList) convertToNew() NewInputList {
 	temp := list.Voters[0].flattenVotes()
@@ -66,7 +100,7 @@ func (list InputList) convertToNew() NewInputList {
 
 	return NewInputList{
 		Candidates: temp,
-		Voters:     newVoters,
+		Votes:		newVoters,
 		InverseMap: inverseMap,
 	}
 }

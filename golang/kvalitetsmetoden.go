@@ -35,7 +35,7 @@ func calcLegacy(inputList InputList) (Result, error) {
 	return Result{resolved}, nil
 }
 func calc(inputList NewInputList) (Result, error) {
-	fmt.Println(strconv.Itoa(len(inputList.Candidates)) + "x" + strconv.Itoa(len(inputList.Voters)))
+	fmt.Println(strconv.Itoa(len(inputList.Candidates)) + "x" + strconv.Itoa(len(inputList.Votes)))
 
 	newResult := inputList.compareAllAgainstEachOther()
 	resolved := resolve(inputList.Candidates, newResult)
@@ -43,7 +43,7 @@ func calc(inputList NewInputList) (Result, error) {
 	return Result{resolved}, nil
 }
 
-func (newList NewInputList) compareAllAgainstEachOther() NewVotes {
+func (newList NewInputList) compareAllAgainstEachOther() NewVote {
 	var flattenLen = len(newList.Candidates)
 
 	var start = time.Now()
@@ -59,7 +59,7 @@ func (newList NewInputList) compareAllAgainstEachOther() NewVotes {
 	var sameVoteIndex int
 	var sameVotes, lowerVotes []int
 	var myVote, otherVote int
-	for _, voter = range newList.Voters {
+	for _, voter = range newList.Votes {
 		//Going going through the sortings of the votes
 		for sameVoteIndex, sameVotes = range voter.Votes {
 			//Going through the votes on the same place
@@ -83,7 +83,7 @@ func (newList NewInputList) compareAllAgainstEachOther() NewVotes {
 }
 
 type NewResultCompareObject struct {
-	NewVotes     NewVotes
+	NewVotes     NewVote
 	CandidateMap map[int]Vote
 }
 
@@ -134,10 +134,10 @@ func (list InputList) compareAllAgainstEachOtherOld() map[VictoryPair]int {
 }
 
 //TODO: Check already resolved to avoid infinite loops
-//var alreadyResolved NewVotes
+//var alreadyResolved NewVote
 
 //TODO: Sort after compared
-func resolve(votes []Vote, result NewVotes) [][]Vote {
+func resolve(votes []Vote, result NewVote) [][]Vote {
 	sortedVoteIndexes := make([]int, len(votes))
 	for i := range votes {
 		sortedVoteIndexes[i] = i
@@ -146,8 +146,10 @@ func resolve(votes []Vote, result NewVotes) [][]Vote {
 	sort.Slice(sortedVoteIndexes, func(i, j int) bool {
 		thisVote := votes[i]
 		otherVote := votes[j]
-
+		println()
+		println("Index: " + strconv.Itoa(i) + " : " + strconv.Itoa(j))
 		println(thisVote.Name + " : " + otherVote.Name)
+		println(strconv.Itoa(result[i][j]) + " : " + strconv.Itoa(result[j][i]) + " - " + strconv.FormatBool(result[i][j] > result[j][i]))
 
 		return result[i][j] > result[j][i]
 	})
