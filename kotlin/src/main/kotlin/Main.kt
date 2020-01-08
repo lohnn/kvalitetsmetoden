@@ -5,8 +5,7 @@ import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.SystemExitException
 import java.io.File
 import java.io.OutputStreamWriter
-import java.util.Random
-import java.util.UUID
+import java.util.*
 import kotlin.system.exitProcess
 
 val rg: Random = Random()
@@ -34,15 +33,15 @@ private fun createRandomCandidates(amount: Int): List<List<Vote>> {
 }
 
 fun main(args: Array<String>) {
-    val random = voteRandom(createRandomCandidates(349), 4_000_000)
-    val inputList = InputList(random)
-    val bytes = jacksonObjectMapper().writeValueAsBytes(inputList)
-    val file = File("test9_in.json")
-    if(file.exists()) {
-        file.delete()
-    }
-    file.writeBytes(bytes)
-    exitProcess(0)
+//    val random = voteRandom(createRandomCandidates(349), 4_000_000)
+//    val inputList = InputList(random)
+//    val bytes = jacksonObjectMapper().writeValueAsBytes(inputList)
+//    val file = File("test9_in.json")
+//    if(file.exists()) {
+//        file.delete()
+//    }
+//    file.writeBytes(bytes)
+//    exitProcess(0)
 
     val parser = ArgParser(args)
     val jackson = jacksonObjectMapper()
@@ -63,20 +62,23 @@ fun main(args: Array<String>) {
                     exitProcess(1)
                 }
             } else {
-                if (input != null && inputFile != null) {
-                    println("Decide whether to use input or input file...")
-                    exitProcess(1)
-                }
-                if (input == null && inputFile == null) {
-                    println("You have to have one of input or input file...")
-                    exitProcess(1)
-                }
+                kotlin.system.measureTimeMillis {
+                    if (input != null && inputFile != null) {
+                        println("Decide whether to use input or input file...")
+                        exitProcess(1)
+                    }
+                    if (input == null && inputFile == null) {
+                        println("You have to have one of input or input file...")
+                        exitProcess(1)
+                    }
 
-                getText(input, inputFile).let {
-                    val inputList = jackson.readValue<InputList>(it)
-                    output(outputFile) { jackson.writeValueAsString(inputList.rank()) }
+                    getText(input, inputFile).let {
+                        val inputList = jackson.readValue<InputList>(it)
+                        output(outputFile) { jackson.writeValueAsString(inputList.rank()) }
+                    }
+                }.also {
+                    println("Opeartion took ${it}ms")
                 }
-
             }
         }
     } catch (e: SystemExitException) {

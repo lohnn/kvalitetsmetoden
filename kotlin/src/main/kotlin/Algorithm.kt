@@ -76,7 +76,7 @@ fun List<Vote>.resolve(): List<MutableList<Vote>> {
                 victories.addAll(toResolve.resolve())
                 toResolve.clear()
             }
-            results[0].realVictoriesAgainst(this) != foldedVotes.subList(i, foldedVotes.size).flatMap { it }.size - 1 -> {
+            results[0].realVictoriesAgainst(this) != foldedVotes.subList(i, foldedVotes.size).flatten().size - 1 -> {
                 //The vote has not won over all later votes
                 toResolve.addAll(results)
             }
