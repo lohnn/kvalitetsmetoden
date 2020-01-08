@@ -10,6 +10,14 @@ func (votesList NewVote) flatten() []int {
 	return votes
 }
 
+func flatten(votesList NewVote) []int {
+	var votes, voteArray []int
+	for _, voteArray = range votesList {
+		votes = append(votes, voteArray...)
+	}
+	return votes
+}
+
 func (votesList NewVote) mapToVotes(voteList VoteList) [][]Vote {
 	var returnList [][]Vote
 
@@ -35,11 +43,8 @@ type NewVoter struct {
 }
 
 type NewInputList struct {
-	//Candidates in the voting, zero indexed, referenced as indexes in Votes
-	Candidates VoteList `json:"candidates"`
-	//Voting, list of list, uses indexes for referencing candidates
-	Votes      []NewVoter   `json:"votes"`
-	InverseMap map[int]Vote `json:"-"`
+	Candidates VoteList		`json:"candidates"`
+	Votes      [][][]int	`json:"votes"`
 }
 
 type NewInputListJson struct {
@@ -80,7 +85,7 @@ func (list InputList) convertToNew() NewInputList {
 	temp := list.Voters[0].flattenVotes()
 	voteMap := temp.mapVotes()
 
-	newVoters := make([]NewVoter, len(list.Voters))
+	newVoters := make([][][]int, len(list.Voters))
 	for voterIndex, voter := range list.Voters {
 		newVotes := make([][]int, len(voter.Votes))
 		for voteIndex, vote := range voter.Votes {
@@ -90,7 +95,7 @@ func (list InputList) convertToNew() NewInputList {
 			}
 			newVotes[voteIndex] = newInnerVotes
 		}
-		newVoters[voterIndex].Votes = newVotes
+		newVoters[voterIndex] = newVotes
 	}
 
 	inverseMap := make(map[int]Vote)
@@ -101,7 +106,7 @@ func (list InputList) convertToNew() NewInputList {
 	return NewInputList{
 		Candidates: temp,
 		Votes:		newVoters,
-		InverseMap: inverseMap,
+		//InverseMap: inverseMap,
 	}
 }
 

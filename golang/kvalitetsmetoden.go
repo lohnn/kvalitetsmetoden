@@ -20,8 +20,8 @@ func calcLegacy(inputList InputList) (Result, error) {
 	oldResult := inputList.compareAllAgainstEachOtherOld()
 
 	hasSameOutput := NewResultCompareObject{
-		NewVotes:     newResult,
-		CandidateMap: newList.InverseMap,
+		NewVotes: newResult,
+		//CandidateMap: newList.InverseMap,
 	}.compare(oldResult)
 
 	if hasSameOutput {
@@ -55,18 +55,18 @@ func (newList NewInputList) compareAllAgainstEachOther() NewVote {
 
 	//Going through all the voters
 	//_ = voterIndex
-	var voter NewVoter
+	var voter [][]int // NewVoter
 	var sameVoteIndex int
 	var sameVotes, lowerVotes []int
 	var myVote, otherVote int
 	for _, voter = range newList.Votes {
 		//Going going through the sortings of the votes
-		for sameVoteIndex, sameVotes = range voter.Votes {
+		for sameVoteIndex, sameVotes = range voter {
 			//Going through the votes on the same place
 			//_ = currentVoteIndex
 			for _, myVote = range sameVotes {
 				//Comparing this vote against all other votes that are on a lower place than this
-				lowerVotes = voter.Votes[sameVoteIndex+1:].flatten()
+				lowerVotes = flatten(voter[sameVoteIndex+1:])
 				//_ = otherVoteIndex
 				for _, otherVote = range lowerVotes {
 					victoriesAgainst[myVote][otherVote]++
@@ -134,10 +134,31 @@ func (list InputList) compareAllAgainstEachOtherOld() map[VictoryPair]int {
 }
 
 //TODO: Check already resolved to avoid infinite loops
-//var alreadyResolved NewVote
+var alreadyResolved [][]int
 
-//TODO: Sort after compared
-func resolve(votes []Vote, result NewVote) [][]Vote {
+func equal(a, b []int) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i, v := range a {
+		if v != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func checkAlreadyResolved(checkAgainst []int) bool {
+	var resolveCheck []int
+	for _, resolveCheck = range alreadyResolved {
+		if equal(resolveCheck, checkAgainst) {
+			return true
+		}
+	}
+	return false
+}
+
+func resolve(votes []Vote, result [][]int) [][]Vote {
 	sortedVoteIndexes := make([]int, len(votes))
 	for i := range votes {
 		sortedVoteIndexes[i] = i
@@ -154,20 +175,50 @@ func resolve(votes []Vote, result NewVote) [][]Vote {
 		return result[i][j] > result[j][i]
 	})
 
-	//TODO: Stop right here if we already have tried resolving this exact list of votes
-	//alreadyResolved.contains(votes) -> return
+	isAlreadyResolved := checkAlreadyResolved(sortedVoteIndexes)
+	println("Already checked? " + strconv.FormatBool(isAlreadyResolved))
 
-	//var needsResolving []ResolveRange
+	if isAlreadyResolved {
+		return nil
+	}
+	alreadyResolved = append(alreadyResolved, sortedVoteIndexes)
 
 	//Fold votes into two dimensional slice
 	var folded [][]Vote
 	for i := 1; i < len(votes); i++ {
 		if result[i][i-1] == result[i-1][i] {
-			//TODO: Make sure we have something in the slice already
 			folded[len(folded)-1] = append(folded[len(folded)-1], votes[i])
 		} else {
 			folded = append(folded, []Vote{votes[i]})
 		}
+	}
+
+	var needsResolving ResolveRange
+	//var victories [][]Vote
+	for i := 0; i < len(folded); i++ {
+		if len(folded[i]) > 1 {
+			//Two votes are on the same place
+			println("Resolving votes on the same place")
+			//victories = append(victories, resolve(folded[needsResolving.From:needsResolving.To], result))
+
+			needsResolving.From = i + 1
+		} else if false {
+			//The vote has not won over all later votes
+			//TODO: The vote has not won over all later votes
+		} else {
+			println("Resolving votes around a gap")
+			//TODO: Resolve votes in the gap
+			//Let's now try to resolve the votes
+			if needsResolving.needsResolve() {
+				//needsResolving.resolve() (if needed)
+			}
+			needsResolving.From = i + 1
+		}
+	}
+
+	if needsResolving.needsResolve() {
+		//TODO: Resolve once more
+		return folded
 	}
 
 	//Create a two dimensional array, where votes that has the same realVictoriesAgainstGroup as
@@ -179,6 +230,10 @@ func resolve(votes []Vote, result NewVote) [][]Vote {
 type ResolveRange struct {
 	From int
 	To   int
+}
+
+func (this ResolveRange) needsResolve() bool {
+	return this.From == this.To
 }
 
 type VictoryPair struct {
