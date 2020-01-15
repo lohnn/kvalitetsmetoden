@@ -50,7 +50,7 @@ func convertToNew(number int) {
 	json.Unmarshal(bytes, &il)
 	fmt.Println("Finished reading JSON")
 
-	newList := il.convertToNewJson()
+	newList := il.convertToNewJSON()
 	resultJSON, e := json.Marshal(newList)
 	check(e)
 	writeFile := "../../kvalitetsmetoden_testfiles/test" + file + "_in.json"

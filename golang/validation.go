@@ -31,7 +31,7 @@ func (list InputList) validate() error {
 		second := list.Voters[i]
 
 		if first.missesVotes(second) {
-			return errors.New(fmt.Sprintf("someone forgot to vote for all alternatives:\nfirst:  %1v\nsecond: %2v", first, second))
+			return fmt.Errorf("someone forgot to vote for all alternatives:\nfirst:  %1v\nsecond: %2v", first, second)
 		}
 	}
 	fmt.Println("Everyone voted for everything.")

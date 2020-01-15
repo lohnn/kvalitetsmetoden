@@ -1,8 +1,8 @@
 package main
 
-type NewVote [][]int
+type newVote [][]int
 
-func (votesList NewVote) flatten() []int {
+func (votesList newVote) flatten() []int {
 	var votes, voteArray []int
 	for _, voteArray = range votesList {
 		votes = append(votes, voteArray...)
@@ -10,7 +10,7 @@ func (votesList NewVote) flatten() []int {
 	return votes
 }
 
-func flatten(votesList NewVote) []int {
+func flatten(votesList newVote) []int {
 	var votes, voteArray []int
 	for _, voteArray = range votesList {
 		votes = append(votes, voteArray...)
@@ -18,7 +18,7 @@ func flatten(votesList NewVote) []int {
 	return votes
 }
 
-func (votesList NewVote) mapToVotes(voteList VoteList) [][]Vote {
+func (votesList newVote) mapToVotes(voteList VoteList) [][]Vote {
 	var returnList [][]Vote
 
 	for _, outer := range votesList {
@@ -38,21 +38,24 @@ func mapToVotes(outer []int, voteList VoteList) []Vote {
 	return returnList
 }
 
+// NewVoter is the new format for a voter
 type NewVoter struct {
-	Votes NewVote `json:"vote"`
+	Votes newVote `json:"vote"`
 }
 
+// NewInputList is the new format of the input list
 type NewInputList struct {
 	Candidates VoteList		`json:"candidates"`
 	Votes      [][][]int	`json:"votes"`
 }
 
-type NewInputListJson struct {
+// NewInputListJSON is the new format of the input list
+type NewInputListJSON struct {
 	Candidates VoteList		`json:"candidates"`
 	Votes      [][][]int	`json:"votes"`
 }
 
-func (list InputList) convertToNewJson() NewInputListJson {
+func (list InputList) convertToNewJSON() NewInputListJSON {
 	temp := list.Voters[0].flattenVotes()
 	voteMap := temp.mapVotes()
 
@@ -74,7 +77,7 @@ func (list InputList) convertToNewJson() NewInputListJson {
 		inverseMap[v] = k
 	}
 
-	return NewInputListJson{
+	return NewInputListJSON{
 		Candidates: temp,
 		Votes:      newVoters,
 	}

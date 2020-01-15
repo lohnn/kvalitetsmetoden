@@ -43,7 +43,7 @@ func calc(inputList NewInputList) (Result, error) {
 	return Result{resolved}, nil
 }
 
-func (newList NewInputList) compareAllAgainstEachOther() NewVote {
+func (newList NewInputList) compareAllAgainstEachOther() newVote {
 	var flattenLen = len(newList.Candidates)
 
 	var start = time.Now()
@@ -82,8 +82,9 @@ func (newList NewInputList) compareAllAgainstEachOther() NewVote {
 	return victoriesAgainst
 }
 
+// NewResultCompareObject is a helper struct for comparing in an output. Will be removed eventually
 type NewResultCompareObject struct {
-	NewVotes     NewVote
+	NewVotes     newVote
 	CandidateMap map[int]Vote
 }
 
@@ -227,15 +228,17 @@ func resolve(votes []Vote, result [][]int) [][]Vote {
 	return folded
 }
 
+// ResolveRange is a struct that is used when unwrangling the sorted votes to know what sub-parts needs unwrangling
 type ResolveRange struct {
 	From int
 	To   int
 }
 
-func (this ResolveRange) needsResolve() bool {
-	return this.From == this.To
+func (myRange ResolveRange) needsResolve() bool {
+	return myRange.From == myRange.To
 }
 
+// VictoryPair is a struct for comparing two votes and who is higher ranked than the other
 type VictoryPair struct {
 	Me    Vote
 	Other Vote
