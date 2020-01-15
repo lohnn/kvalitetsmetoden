@@ -2,21 +2,38 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"strconv"
 	"time"
 )
 
+//Argument documentation
+//
+// -v | --validate		Validates input and output. (What even does this mean?)
+// -s | --source		Source file location. Either source file or input is needed for the program to run.
+// -i | --input			Input voting data here in a JSON formatted string. Either input or source file is needed for the program to run.
+// -d | --destination	Destination file location, if not provided, result will be returned JSON formatted.
+// -e | --expected		Expected value. (What even does this mean?)
 func main() {
-	calculateNewModel(1)
+	sourceFlag := flag.String("source", "", "Provide a file path here")
+	destinationFlag := flag.String("destination", "", "Provide a file path here")
+	// dFlat := flag.String("d", "", "Provide a file path here")	}
+	flag.Parse()
+
+	sourceFile := *sourceFlag
+	destinationFile := *destinationFlag
+
+	calculateNewModel(sourceFile, destinationFile)
 }
 
-func calculateNewModel(number int) {
+func calculateNewModel(sourceFile string, destinationFile string) {
 	start := time.Now()
-	file := strconv.Itoa(number)
+	// file := strconv.Itoa(number)
 	var il NewInputList
-	readFile := "../../kvalitetsmetoden_testfiles/test" + file + "_in.json"
+	// readFile := "../../kvalitetsmetoden_testfiles/test" + file + "_in.json"
+	readFile := sourceFile
 	fmt.Println("Reading from file " + readFile)
 	bytes, e := ioutil.ReadFile(readFile)
 	check(e)
@@ -27,7 +44,8 @@ func calculateNewModel(number int) {
 	check(e)
 	resultJSON, e := json.Marshal(result)
 	check(e)
-	writeFile := "../../kvalitetsmetoden_testfiles/test" + file + "_out.json"
+	// writeFile := "../../kvalitetsmetoden_testfiles/test" + file + "_out.json"
+	writeFile := destinationFile
 	e = ioutil.WriteFile(writeFile, resultJSON, 0644)
 	fmt.Println("Writing to file " + writeFile)
 	check(e)
