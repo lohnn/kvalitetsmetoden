@@ -33,20 +33,20 @@ func main() {
 	json.Unmarshal(bytes, &il)
 	fmt.Println("Finished reading JSON")
 
-	resultJSON := calculateNewModel(il, destinationFile)
-
+	result := calculateNewModel(il, destinationFile)
+	
+	resultJSON, e := json.Marshal(result)
+	check(e)
 	writeFile := destinationFile
 	e = ioutil.WriteFile(writeFile, resultJSON, 0644)
 	fmt.Println("Writing to file " + writeFile)
 	check(e)
 }
 
-func calculateNewModel(il NewInputList, destinationFile string) []byte {
+func calculateNewModel(il NewInputList, destinationFile string) Result {
 	start := time.Now()
 	
 	result, e := calc(il)
-	check(e)
-	resultJSON, e := json.Marshal(result)
 	check(e)
 	
 	elapsed := time.Now().Sub(start)
@@ -55,7 +55,7 @@ func calculateNewModel(il NewInputList, destinationFile string) []byte {
 	fmt.Println("===================")
 	fmt.Println()
 
-	return resultJSON
+	return result
 }
 
 func convertToNew(number int) {
