@@ -25,14 +25,7 @@ func main() {
 	sourceFile := *sourceFlag
 	destinationFile := *destinationFlag
 
-	calculateNewModel(sourceFile, destinationFile)
-}
-
-func calculateNewModel(sourceFile string, destinationFile string) {
-	start := time.Now()
-	// file := strconv.Itoa(number)
 	var il NewInputList
-	// readFile := "../../kvalitetsmetoden_testfiles/test" + file + "_in.json"
 	readFile := sourceFile
 	fmt.Println("Reading from file " + readFile)
 	bytes, e := ioutil.ReadFile(readFile)
@@ -40,21 +33,29 @@ func calculateNewModel(sourceFile string, destinationFile string) {
 	json.Unmarshal(bytes, &il)
 	fmt.Println("Finished reading JSON")
 
-	result, e := calc(il)
-	check(e)
-	resultJSON, e := json.Marshal(result)
-	check(e)
-	// writeFile := "../../kvalitetsmetoden_testfiles/test" + file + "_out.json"
+	resultJSON := calculateNewModel(il, destinationFile)
+
 	writeFile := destinationFile
 	e = ioutil.WriteFile(writeFile, resultJSON, 0644)
 	fmt.Println("Writing to file " + writeFile)
 	check(e)
+}
 
+func calculateNewModel(il NewInputList, destinationFile string) []byte {
+	start := time.Now()
+	
+	result, e := calc(il)
+	check(e)
+	resultJSON, e := json.Marshal(result)
+	check(e)
+	
 	elapsed := time.Now().Sub(start)
 	fmt.Println("Operation took " + elapsed.String())
 	fmt.Println()
 	fmt.Println("===================")
 	fmt.Println()
+
+	return resultJSON
 }
 
 func convertToNew(number int) {
