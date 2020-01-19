@@ -159,7 +159,7 @@ func checkAlreadyResolved(checkAgainst []int) bool {
 	return false
 }
 
-func resolve(votes []Vote, result [][]int) [][]Vote {
+func resolve(votes []Vote, resultMatrix [][]int) [][]Vote {
 	sortedVoteIndexes := make([]int, len(votes))
 	for i := range votes {
 		sortedVoteIndexes[i] = i
@@ -171,9 +171,9 @@ func resolve(votes []Vote, result [][]int) [][]Vote {
 		println()
 		println("Index: " + strconv.Itoa(i) + " : " + strconv.Itoa(j))
 		println(thisVote.Name + " : " + otherVote.Name)
-		println(strconv.Itoa(result[i][j]) + " : " + strconv.Itoa(result[j][i]) + " - " + strconv.FormatBool(result[i][j] > result[j][i]))
+		println(strconv.Itoa(resultMatrix[i][j]) + " : " + strconv.Itoa(resultMatrix[j][i]) + " - " + strconv.FormatBool(resultMatrix[i][j] > resultMatrix[j][i]))
 
-		return result[i][j] > result[j][i]
+		return resultMatrix[i][j] > resultMatrix[j][i]
 	})
 
 	isAlreadyResolved := checkAlreadyResolved(sortedVoteIndexes)
@@ -185,27 +185,30 @@ func resolve(votes []Vote, result [][]int) [][]Vote {
 	alreadyResolved = append(alreadyResolved, sortedVoteIndexes)
 
 	//Fold votes into two dimensional slice
-	var folded [][]Vote
+	var folded [][]int
 	for i := 1; i < len(votes); i++ {
-		if result[i][i-1] == result[i-1][i] {
-			folded[len(folded)-1] = append(folded[len(folded)-1], votes[i])
+		if resultMatrix[i][i-1] == resultMatrix[i-1][i] {
+			folded[len(folded)-1] = append(folded[len(folded)-1], i)
 		} else {
-			folded = append(folded, []Vote{votes[i]})
+			folded = append(folded, []int{i})
 		}
 	}
 
+	println("\nStarting cleanum")
 	var needsResolving ResolveRange
 	//var victories [][]Vote
 	for i := 0; i < len(folded); i++ {
-		if len(folded[i]) > 1 {
+		results := folded[i]
+		if len(results) > 1 {
 			//Two votes are on the same place
 			println("Resolving votes on the same place")
 			//victories = append(victories, resolve(folded[needsResolving.From:needsResolving.To], result))
 
 			needsResolving.From = i + 1
-		} else if false {
+		} else if !winsAgainstAll(results[0], folded[i+1:], resultMatrix) {
 			//The vote has not won over all later votes
 			//TODO: The vote has not won over all later votes
+			println("Did not win against all lower")
 		} else {
 			println("Resolving votes around a gap")
 			//TODO: Resolve votes in the gap
@@ -217,15 +220,27 @@ func resolve(votes []Vote, result [][]int) [][]Vote {
 		}
 	}
 
+	var temp [][]Vote
 	if needsResolving.needsResolve() {
 		//TODO: Resolve once more
-		return folded
+		return temp
 	}
 
 	//Create a two dimensional array, where votes that has the same realVictoriesAgainstGroup as
 	//each other gets put in the same place.
 
-	return folded
+	return temp
+}
+
+func winsAgainstAll(myIndex int, others [][]int, resultMatrix [][]int) bool {
+	for i := range others {
+		for _, otherVoteIndex := range others[i] {
+			if resultMatrix[myIndex][otherVoteIndex] <= resultMatrix[otherVoteIndex][myIndex] {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 // ResolveRange is a struct that is used when unwrangling the sorted votes to know what sub-parts needs unwrangling
