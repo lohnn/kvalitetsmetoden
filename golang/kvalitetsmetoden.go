@@ -29,8 +29,11 @@ func calcLegacy(inputList InputList) (Result, error) {
 	} else {
 		println("Oh noes... We did not have the same output!")
 	}
-
-	resolved := resolve(newList.Candidates, newResult)
+	indexes := make([]int, len(newResult))
+	for i := range newList.Candidates {
+		indexes[i] = i
+	}
+	resolved := resolve(indexes, newResult)
 	//mapped := resolved.mapToVotes(newList.Candidates)
 	return Result{resolved}, nil
 }
@@ -38,7 +41,11 @@ func calc(inputList NewInputList) (Result, error) {
 	fmt.Println(strconv.Itoa(len(inputList.Candidates)) + "x" + strconv.Itoa(len(inputList.Votes)))
 
 	newResult := inputList.compareAllAgainstEachOther()
-	resolved := resolve(inputList.Candidates, newResult)
+	indexes := make([]int, len(newResult))
+	for i := range inputList.Candidates {
+		indexes[i] = i
+	}
+	resolved := resolve(indexes, newResult)
 
 	return Result{resolved}, nil
 }
@@ -159,18 +166,16 @@ func checkAlreadyResolved(checkAgainst []int) bool {
 	return false
 }
 
-func resolve(votes []Vote, resultMatrix [][]int) [][]Vote {
+func resolve(votes []int, resultMatrix [][]int) [][]Vote {
 	sortedVoteIndexes := make([]int, len(votes))
-	for i := range votes {
-		sortedVoteIndexes[i] = i
-	}
+	copy(sortedVoteIndexes, votes)
 
 	sort.Slice(sortedVoteIndexes, func(i, j int) bool {
-		thisVote := votes[i]
-		otherVote := votes[j]
+		// thisVote := votes[i]
+		// otherVote := votes[j]
 		println()
 		println("Index: " + strconv.Itoa(i) + " : " + strconv.Itoa(j))
-		println(thisVote.Name + " : " + otherVote.Name)
+		// println(thisVote + " : " + otherVote)
 		println(strconv.Itoa(resultMatrix[i][j]) + " : " + strconv.Itoa(resultMatrix[j][i]) + " - " + strconv.FormatBool(resultMatrix[i][j] > resultMatrix[j][i]))
 
 		return resultMatrix[i][j] > resultMatrix[j][i]
