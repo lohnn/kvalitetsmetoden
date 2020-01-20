@@ -222,7 +222,7 @@ func resolve(voteIndexes []int, resultMatrix [][]int) [][]int {
 			victories = append(victories, resolved...)
 			needsResolving = nil
 			// needsResolving.From = i + 1
-		} else if !winsAgainstAll(results[0], folded[i+1:], resultMatrix) {
+		} else if !winsAgainstLower(results[0], folded[i+1:], resultMatrix) {
 			//The vote has not won over all later votes
 			println("Did not win against all lower")
 			needsResolving = append(needsResolving, results...)
@@ -252,7 +252,7 @@ func resolve(voteIndexes []int, resultMatrix [][]int) [][]int {
 	return victories
 }
 
-func winsAgainstAll(myIndex int, others [][]int, resultMatrix [][]int) bool {
+func winsAgainstLower(myIndex int, others [][]int, resultMatrix [][]int) bool {
 	for i := range others {
 		for _, otherVoteIndex := range others[i] {
 			if resultMatrix[myIndex][otherVoteIndex] <= resultMatrix[otherVoteIndex][myIndex] {
