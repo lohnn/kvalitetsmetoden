@@ -184,17 +184,20 @@ func resolve(voteIndexes []int, resultMatrix [][]int) [][]int {
 
 	//Fold votes into two dimensional slice
 	var folded [][]int
-	for i := 1; i < len(sortedVoteIndexes); i++ {
+	for i := 0; i < len(sortedVoteIndexes); i++ {
+		if i == 0 {
+			folded = append(folded, []int{sortedVoteIndexes[i]})
+			continue
+		}
+
+		lastI := sortedVoteIndexes[i-1]
 		thisI := sortedVoteIndexes[i]
-		prevI := sortedVoteIndexes[i-1]
-		if resultMatrix[thisI][prevI] == resultMatrix[prevI][thisI] {
-			if folded == nil {
-				folded = append(folded, voteIndexes)
-			} else {
-				folded[len(folded)-1] = append(folded[len(folded)-1], voteIndexes[i])
-			}
+		thisVictories := resultMatrix[thisI][lastI]
+		otherVictories := resultMatrix[lastI][thisI]
+		if thisVictories == otherVictories {
+			folded[len(folded)-1] = append(folded[len(folded)-1], thisI)
 		} else {
-			folded = append(folded, []int{voteIndexes[i]})
+			folded = append(folded, []int{thisI})
 		}
 	}
 
