@@ -35,7 +35,7 @@ func main() {
 
 	result := calculateNewModel(il, destinationFile)
 	
-	resultJSON, e := json.Marshal(result)
+	resultJSON, e := json.MarshalIndent(result, "", "    ")
 	check(e)
 	writeFile := destinationFile
 	e = ioutil.WriteFile(writeFile, resultJSON, 0644)
@@ -43,7 +43,7 @@ func main() {
 	check(e)
 }
 
-func calculateNewModel(il NewInputList, destinationFile string) Result {
+func calculateNewModel(il NewInputList, destinationFile string) NewResult {
 	start := time.Now()
 	
 	result, e := calc(il)

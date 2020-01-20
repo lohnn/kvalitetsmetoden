@@ -45,14 +45,20 @@ type NewVoter struct {
 
 // NewInputList is the new format of the input list
 type NewInputList struct {
-	Candidates VoteList		`json:"candidates"`
-	Votes      [][][]int	`json:"votes"`
+	Candidates VoteList  `json:"candidates"`
+	Votes      [][][]int `json:"votes"`
 }
 
 // NewInputListJSON is the new format of the input list
 type NewInputListJSON struct {
-	Candidates VoteList		`json:"candidates"`
-	Votes      [][][]int	`json:"votes"`
+	Candidates VoteList  `json:"candidates"`
+	Votes      [][][]int `json:"votes"`
+}
+
+// NewResult is the new format of the result
+type NewResult struct {
+	Candidates VoteList `json:"candidates"`
+	Result     [][]int  `json:"result"`
 }
 
 func (list InputList) convertToNewJSON() NewInputListJSON {
@@ -83,7 +89,6 @@ func (list InputList) convertToNewJSON() NewInputListJSON {
 	}
 }
 
-
 func (list InputList) convertToNew() NewInputList {
 	temp := list.Voters[0].flattenVotes()
 	voteMap := temp.mapVotes()
@@ -108,7 +113,7 @@ func (list InputList) convertToNew() NewInputList {
 
 	return NewInputList{
 		Candidates: temp,
-		Votes:		newVoters,
+		Votes:      newVoters,
 		//InverseMap: inverseMap,
 	}
 }

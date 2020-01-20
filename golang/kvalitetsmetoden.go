@@ -33,11 +33,11 @@ func calcLegacy(inputList InputList) (Result, error) {
 	for i := range newList.Candidates {
 		indexes[i] = i
 	}
-	resolved := resolve(indexes, newResult)
+	// resolved := resolve(indexes, newResult)
 	//mapped := resolved.mapToVotes(newList.Candidates)
-	return Result{resolved}, nil
+	return Result{}, nil
 }
-func calc(inputList NewInputList) (Result, error) {
+func calc(inputList NewInputList) (NewResult, error) {
 	fmt.Println(strconv.Itoa(len(inputList.Candidates)) + "x" + strconv.Itoa(len(inputList.Votes)))
 
 	newResult := inputList.compareAllAgainstEachOther()
@@ -46,8 +46,9 @@ func calc(inputList NewInputList) (Result, error) {
 		indexes[i] = i
 	}
 	resolved := resolve(indexes, newResult)
+	//TODO: Map back from indexes to vote to store correctly
 
-	return Result{resolved}, nil
+	return NewResult{Result: resolved, Candidates: inputList.Candidates}, nil
 }
 
 func (newList NewInputList) compareAllAgainstEachOther() newVote {
@@ -166,9 +167,9 @@ func checkAlreadyResolved(checkAgainst []int) bool {
 	return false
 }
 
-func resolve(votes []int, resultMatrix [][]int) [][]Vote {
-	sortedVoteIndexes := make([]int, len(votes))
-	copy(sortedVoteIndexes, votes)
+func resolve(voteIndexes []int, resultMatrix [][]int) [][]int {
+	sortedVoteIndexes := make([]int, len(voteIndexes))
+	copy(sortedVoteIndexes, voteIndexes)
 
 	sort.Slice(sortedVoteIndexes, func(i, j int) bool {
 		// thisVote := votes[i]
@@ -181,60 +182,71 @@ func resolve(votes []int, resultMatrix [][]int) [][]Vote {
 		return resultMatrix[i][j] > resultMatrix[j][i]
 	})
 
-	isAlreadyResolved := checkAlreadyResolved(sortedVoteIndexes)
-	println("Already checked? " + strconv.FormatBool(isAlreadyResolved))
-
-	if isAlreadyResolved {
-		return nil
-	}
-	alreadyResolved = append(alreadyResolved, sortedVoteIndexes)
-
 	//Fold votes into two dimensional slice
 	var folded [][]int
-	for i := 1; i < len(votes); i++ {
-		if resultMatrix[i][i-1] == resultMatrix[i-1][i] {
-			folded[len(folded)-1] = append(folded[len(folded)-1], i)
+	for i := 1; i < len(sortedVoteIndexes); i++ {
+		thisI := sortedVoteIndexes[i]
+		prevI := sortedVoteIndexes[i-1]
+		if resultMatrix[thisI][prevI] == resultMatrix[prevI][thisI] {
+			if folded == nil {
+				folded = append(folded, voteIndexes)
+			} else {
+				folded[len(folded)-1] = append(folded[len(folded)-1], voteIndexes[i])
+			}
 		} else {
-			folded = append(folded, []int{i})
+			folded = append(folded, []int{voteIndexes[i]})
 		}
 	}
 
-	println("\nStarting cleanum")
-	var needsResolving ResolveRange
-	//var victories [][]Vote
+	isAlreadyResolved := checkAlreadyResolved(sortedVoteIndexes)
+	println("Already checked? " + strconv.FormatBool(isAlreadyResolved))
+	if isAlreadyResolved {
+		return folded
+	}
+	alreadyResolved = append(alreadyResolved, sortedVoteIndexes)
+
+	println("\nStarting cleanup")
+	var needsResolving []int
+	var victories [][]int
 	for i := 0; i < len(folded); i++ {
 		results := folded[i]
 		if len(results) > 1 {
 			//Two votes are on the same place
 			println("Resolving votes on the same place")
-			//victories = append(victories, resolve(folded[needsResolving.From:needsResolving.To], result))
 
-			needsResolving.From = i + 1
+			needsResolving = append(needsResolving, results...)
+			resolved := resolve(needsResolving, resultMatrix)
+			victories = append(victories, resolved...)
+			needsResolving = nil
+			// needsResolving.From = i + 1
 		} else if !winsAgainstAll(results[0], folded[i+1:], resultMatrix) {
 			//The vote has not won over all later votes
-			//TODO: The vote has not won over all later votes
 			println("Did not win against all lower")
+			needsResolving = append(needsResolving, results...)
 		} else {
-			println("Resolving votes around a gap")
 			//TODO: Resolve votes in the gap
 			//Let's now try to resolve the votes
-			if needsResolving.needsResolve() {
-				//needsResolving.resolve() (if needed)
+			if len(needsResolving) > 0 {
+				println("Resolving votes around a gap")
+				resolved := resolve(needsResolving, resultMatrix)
+				victories = append(victories, resolved...)
+				needsResolving = nil
 			}
-			needsResolving.From = i + 1
+			victories = append(victories, results)
 		}
 	}
 
-	var temp [][]Vote
-	if needsResolving.needsResolve() {
-		//TODO: Resolve once more
-		return temp
+	if len(needsResolving) > 0 {
+		println("Resolving votes around a gap")
+		resolved := resolve(needsResolving, resultMatrix)
+		victories = append(victories, resolved...)
+		needsResolving = nil
 	}
 
 	//Create a two dimensional array, where votes that has the same realVictoriesAgainstGroup as
 	//each other gets put in the same place.
 
-	return temp
+	return victories
 }
 
 func winsAgainstAll(myIndex int, others [][]int, resultMatrix [][]int) bool {
