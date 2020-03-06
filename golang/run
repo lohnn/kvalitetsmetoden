@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -ex
+goimports -w *.go
+go build
+./golang -source ~/Programming/kvalitetsmetoden_testfiles/test-1_in.json -destination ~/Programming/kvalitetsmetoden_testfiles/test-1_out.json

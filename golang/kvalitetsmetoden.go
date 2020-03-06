@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"sort"
+	"os"
 	"strconv"
 	"time"
 )
@@ -167,89 +167,111 @@ func checkAlreadyResolved(checkAgainst []int) bool {
 	return false
 }
 
+func getIndex(i, n int) (int, int) {
+	return i / n, i % n
+}
+
+type NetVote struct {
+	candidate  int
+	candidate2 int
+	diff       int
+}
+
 func resolve(voteIndexes []int, resultMatrix [][]int) [][]int {
-	sortedVoteIndexes := make([]int, len(voteIndexes))
-	copy(sortedVoteIndexes, voteIndexes)
+	l := len(voteIndexes)
+	sortedVoteIndexes := make([]NetVote, l*(l-1)/2)
+	x := 0
+	for i := 0; i < l-1; i++ {
+		for j := i + 1; j < l; j++ {
+			println(i, j)
+			sortedVoteIndexes[x] = NetVote{i, j, (resultMatrix[i][j] - resultMatrix[j][i])}
+			x += 1
+		}
+	}
+	fmt.Printf("%v\n", sortedVoteIndexes)
+	// fmt.Printf("%v\n", sortedVoteIndexes)
 
-	sort.Slice(sortedVoteIndexes, func(i, j int) bool {
-		// thisVote := votes[i]
-		// otherVote := votes[j]
-		println()
-		println("Index: " + strconv.Itoa(i) + " : " + strconv.Itoa(j))
-		// println(thisVote + " : " + otherVote)
-		println(strconv.Itoa(resultMatrix[i][j]) + " : " + strconv.Itoa(resultMatrix[j][i]) + " - " + strconv.FormatBool(resultMatrix[i][j] > resultMatrix[j][i]))
-
-		return resultMatrix[i][j] > resultMatrix[j][i]
-	})
+	// sort.Slice(sortedVoteIndexes, func(i, j int) bool {
+	// 	a, b := getIndex(i, l)
+	// 	c, d := getIndex(j, l)
+	// 	return (resultMatrix[a][b] - resultMatrix[b][a]) > (resultMatrix[c][d] - resultMatrix[d][c])
+	// })
+	// for _, x := range sortedVoteIndexes {
+	// 	a,b := getIndex(x,l)
+	// 	println(a,b, resultMatrix[a][b], resultMatrix[b][a], resultMatrix[a][b] - resultMatrix[b][a])
+	// }
+	// fmt.Printf("%v", sortedVoteIndexes)
+	os.Exit(0)
+	return resultMatrix
 
 	//Fold votes into two dimensional slice
-	var folded [][]int
-	for i := 0; i < len(sortedVoteIndexes); i++ {
-		if i == 0 {
-			folded = append(folded, []int{sortedVoteIndexes[i]})
-			continue
-		}
+	// var folded [][]int
+	// for i := 0; i < len(sortedVoteIndexes); i++ {
+	// 	if i == 0 {
+	// 		folded = append(folded, []int{sortedVoteIndexes[i]})
+	// 		continue
+	// 	}
 
-		lastI := sortedVoteIndexes[i-1]
-		thisI := sortedVoteIndexes[i]
-		thisVictories := resultMatrix[thisI][lastI]
-		otherVictories := resultMatrix[lastI][thisI]
-		if thisVictories == otherVictories {
-			folded[len(folded)-1] = append(folded[len(folded)-1], thisI)
-		} else {
-			folded = append(folded, []int{thisI})
-		}
-	}
+	// 	lastI := sortedVoteIndexes[i-1]
+	// 	thisI := sortedVoteIndexes[i]
+	// 	thisVictories := resultMatrix[thisI][lastI]
+	// 	otherVictories := resultMatrix[lastI][thisI]
+	// 	if thisVictories == otherVictories {
+	// 		folded[len(folded)-1] = append(folded[len(folded)-1], thisI)
+	// 	} else {
+	// 		folded = append(folded, []int{thisI})
+	// 	}
+	// }
 
-	isAlreadyResolved := checkAlreadyResolved(sortedVoteIndexes)
-	println("Already checked? " + strconv.FormatBool(isAlreadyResolved))
-	if isAlreadyResolved {
-		return folded
-	}
-	alreadyResolved = append(alreadyResolved, sortedVoteIndexes)
+	// isAlreadyResolved := checkAlreadyResolved(sortedVoteIndexes)
+	// println("Already checked? " + strconv.FormatBool(isAlreadyResolved))
+	// if isAlreadyResolved {
+	// 	return folded
+	// }
+	// alreadyResolved = append(alreadyResolved, sortedVoteIndexes)
 
-	println("\nStarting cleanup")
-	var needsResolving []int
-	var victories [][]int
-	for i := 0; i < len(folded); i++ {
-		results := folded[i]
-		if len(results) > 1 {
-			//Two votes are on the same place
-			println("Resolving votes on the same place")
+	// println("\nStarting cleanup")
+	// var needsResolving []int
+	// var victories [][]int
+	// for i := 0; i < len(folded); i++ {
+	// 	results := folded[i]
+	// 	if len(results) > 1 {
+	// 		//Two votes are on the same place
+	// 		println("Resolving votes on the same place")
 
-			needsResolving = append(needsResolving, results...)
-			resolved := resolve(needsResolving, resultMatrix)
-			victories = append(victories, resolved...)
-			needsResolving = nil
-			// needsResolving.From = i + 1
-		} else if !winsAgainstLower(results[0], folded[i+1:], resultMatrix) {
-			//The vote has not won over all later votes
-			println("Did not win against all lower")
-			needsResolving = append(needsResolving, results...)
-		} else {
-			//TODO: Resolve votes in the gap
-			//Let's now try to resolve the votes
-			if len(needsResolving) > 0 {
-				println("Resolving votes around a gap")
-				resolved := resolve(needsResolving, resultMatrix)
-				victories = append(victories, resolved...)
-				needsResolving = nil
-			}
-			victories = append(victories, results)
-		}
-	}
+	// 		needsResolving = append(needsResolving, results...)
+	// 		resolved := resolve(needsResolving, resultMatrix)
+	// 		victories = append(victories, resolved...)
+	// 		needsResolving = nil
+	// 		// needsResolving.From = i + 1
+	// 	} else if !winsAgainstLower(results[0], folded[i+1:], resultMatrix) {
+	// 		//The vote has not won over all later votes
+	// 		println("Did not win against all lower")
+	// 		needsResolving = append(needsResolving, results...)
+	// 	} else {
+	// 		//TODO: Resolve votes in the gap
+	// 		//Let's now try to resolve the votes
+	// 		if len(needsResolving) > 0 {
+	// 			println("Resolving votes around a gap")
+	// 			resolved := resolve(needsResolving, resultMatrix)
+	// 			victories = append(victories, resolved...)
+	// 			needsResolving = nil
+	// 		}
+	// 		victories = append(victories, results)
+	// 	}
+	// }
 
-	if len(needsResolving) > 0 {
-		println("Resolving votes around a gap")
-		resolved := resolve(needsResolving, resultMatrix)
-		victories = append(victories, resolved...)
-		needsResolving = nil
-	}
+	// if len(needsResolving) > 0 {
+	// 	println("Resolving votes around a gap")
+	// 	resolved := resolve(needsResolving, resultMatrix)
+	// 	victories = append(victories, resolved...)
+	// 	needsResolving = nil
+	// }
 
-	//Create a two dimensional array, where votes that has the same realVictoriesAgainstGroup as
-	//each other gets put in the same place.
+	// //Create a two dimensional array, where votes that has the same realVictoriesAgainstGroup as
+	// //each other gets put in the same place.
 
-	return victories
+	// return victories
 }
 
 func winsAgainstLower(myIndex int, others [][]int, resultMatrix [][]int) bool {
