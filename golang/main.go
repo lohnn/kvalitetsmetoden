@@ -17,6 +17,10 @@ import (
 // -d | --destination	Destination file location, if not provided, result will be returned JSON formatted.
 // -e | --expected		Expected value. (What even does this mean?)
 func main() {
+	// i := flag.Int("file", 1, "Provide a file number here")
+	// dir := flag.String("dir", "", "Path to directory")
+	// flag.Parse()
+	// convertToNew(*dir, *i)
 	sourceFlag := flag.String("source", "", "Provide a file path here")
 	destinationFlag := flag.String("destination", "", "Provide a file path here")
 	// dFlat := flag.String("d", "", "Provide a file path here")	}
@@ -58,11 +62,11 @@ func calculateNewModel(il NewInputList, destinationFile string) NewResult {
 	return result
 }
 
-func convertToNew(number int) {
+func convertToNew(dir string, number int) {
 	start := time.Now()
 	file := strconv.Itoa(number)
 	var il InputList
-	readFile := "../../kvalitetsmetoden_testfiles/test" + file + "_in_legacy.json"
+	readFile := dir +"/test" + file + "_in_legacy.json"
 	fmt.Println("Reading from file " + readFile)
 	bytes, e := ioutil.ReadFile(readFile)
 	check(e)
@@ -72,7 +76,7 @@ func convertToNew(number int) {
 	newList := il.convertToNewJSON()
 	resultJSON, e := json.Marshal(newList)
 	check(e)
-	writeFile := "../../kvalitetsmetoden_testfiles/test" + file + "_in.json"
+	writeFile := dir + "/test" + file + "_in.json"
 	e = ioutil.WriteFile(writeFile, resultJSON, 0644)
 	fmt.Println("Writing to file " + writeFile)
 	check(e)
