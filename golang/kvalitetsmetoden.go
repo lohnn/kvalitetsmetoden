@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 	"time"
 )
@@ -177,101 +178,128 @@ type NetVote struct {
 	diff       int
 }
 
-func resolve(voteIndexes []int, resultMatrix [][]int) [][]int {
-	l := len(voteIndexes)
-	sortedVoteIndexes := make([]NetVote, l*(l-1)/2)
-	x := 0
-	for i := 0; i < l-1; i++ {
-		for j := i + 1; j < l; j++ {
-			println(i, j)
-			sortedVoteIndexes[x] = NetVote{i, j, (resultMatrix[i][j] - resultMatrix[j][i])}
-			x += 1
+func popular(xs []int, resultMatrix [][]int) func(a, b int) bool {
+	return func(a, b int) bool {
+		as := 0
+		bs := 0
+		for _, i := range xs {
+			as += resultMatrix[xs[a]][i] - resultMatrix[i][xs[a]]
+			bs += resultMatrix[xs[b]][i] - resultMatrix[i][xs[b]]
+		}
+		return as > bs
+	}
+}
+
+func less(cycles *UnionFind, resultMatrix [][]int) func(int, int) bool {
+	return func(a, b int) bool {
+		ra := cycles.Root(a)
+		rb := cycles.Root(b)
+		if ra != rb {
+			return resultMatrix[ra][rb] > resultMatrix[rb][ra]
+		} else {
+			return true
 		}
 	}
-	fmt.Printf("%v\n", sortedVoteIndexes)
-	// fmt.Printf("%v\n", sortedVoteIndexes)
+}
 
-	// sort.Slice(sortedVoteIndexes, func(i, j int) bool {
-	// 	a, b := getIndex(i, l)
-	// 	c, d := getIndex(j, l)
-	// 	return (resultMatrix[a][b] - resultMatrix[b][a]) > (resultMatrix[c][d] - resultMatrix[d][c])
-	// })
-	// for _, x := range sortedVoteIndexes {
-	// 	a,b := getIndex(x,l)
-	// 	println(a,b, resultMatrix[a][b], resultMatrix[b][a], resultMatrix[a][b] - resultMatrix[b][a])
-	// }
-	// fmt.Printf("%v", sortedVoteIndexes)
-	os.Exit(0)
-	return resultMatrix
+func resolveGroup(xs []int, resultMatrix [][]int) [][]int {
+	sort.Slice(xs, popular(xs, resultMatrix))
+	gs := groupSorted(xs, popular(xs, resultMatrix))
+	var groups [][]int
+	for _, g := range gs {
+		if len(g) < len(xs) {
+			gs = resolveGroup(g, resultMatrix)
+			for _, g_ := range gs {
+				groups = append(groups, g_)
+			}
+		} else {
+			return gs
+		}
+	}
+	return groups
+}
 
-	//Fold votes into two dimensional slice
-	// var folded [][]int
-	// for i := 0; i < len(sortedVoteIndexes); i++ {
-	// 	if i == 0 {
-	// 		folded = append(folded, []int{sortedVoteIndexes[i]})
-	// 		continue
-	// 	}
+func groupSorted(xs []int, cmp func(int, int) bool) [][]int {
+	var grouped [][]int
+	var group []int
+	group = append(group, xs[0])
+	for i := 0; i < len(xs)-1; i++ {
+		if cmp(i, i+1) && !cmp(i+1, i) {
+			grouped = append(grouped, group)
+			group = nil
+		}
+		group = append(group, xs[i+1])
+	}
+	if len(group) > 0 {
+		grouped = append(grouped, group)
+	}
+	return grouped
+}
 
-	// 	lastI := sortedVoteIndexes[i-1]
-	// 	thisI := sortedVoteIndexes[i]
-	// 	thisVictories := resultMatrix[thisI][lastI]
-	// 	otherVictories := resultMatrix[lastI][thisI]
-	// 	if thisVictories == otherVictories {
-	// 		folded[len(folded)-1] = append(folded[len(folded)-1], thisI)
-	// 	} else {
-	// 		folded = append(folded, []int{thisI})
-	// 	}
-	// }
-
-	// isAlreadyResolved := checkAlreadyResolved(sortedVoteIndexes)
-	// println("Already checked? " + strconv.FormatBool(isAlreadyResolved))
-	// if isAlreadyResolved {
-	// 	return folded
-	// }
-	// alreadyResolved = append(alreadyResolved, sortedVoteIndexes)
-
-	// println("\nStarting cleanup")
-	// var needsResolving []int
-	// var victories [][]int
-	// for i := 0; i < len(folded); i++ {
-	// 	results := folded[i]
-	// 	if len(results) > 1 {
-	// 		//Two votes are on the same place
-	// 		println("Resolving votes on the same place")
-
-	// 		needsResolving = append(needsResolving, results...)
-	// 		resolved := resolve(needsResolving, resultMatrix)
-	// 		victories = append(victories, resolved...)
-	// 		needsResolving = nil
-	// 		// needsResolving.From = i + 1
-	// 	} else if !winsAgainstLower(results[0], folded[i+1:], resultMatrix) {
-	// 		//The vote has not won over all later votes
-	// 		println("Did not win against all lower")
-	// 		needsResolving = append(needsResolving, results...)
-	// 	} else {
-	// 		//TODO: Resolve votes in the gap
-	// 		//Let's now try to resolve the votes
-	// 		if len(needsResolving) > 0 {
-	// 			println("Resolving votes around a gap")
-	// 			resolved := resolve(needsResolving, resultMatrix)
-	// 			victories = append(victories, resolved...)
-	// 			needsResolving = nil
-	// 		}
-	// 		victories = append(victories, results)
-	// 	}
-	// }
-
-	// if len(needsResolving) > 0 {
-	// 	println("Resolving votes around a gap")
-	// 	resolved := resolve(needsResolving, resultMatrix)
-	// 	victories = append(victories, resolved...)
-	// 	needsResolving = nil
-	// }
-
-	// //Create a two dimensional array, where votes that has the same realVictoriesAgainstGroup as
-	// //each other gets put in the same place.
-
-	// return victories
+func resolve(voteIndexes []int, resultMatrix [][]int) [][]int {
+	l := len(voteIndexes)
+	preorder := make([][]bool, l)
+	for i := range preorder {
+		preorder[i] = make([]bool, l)
+		preorder[i][i] = true
+	}
+	cycles := New(l)
+	fmt.Fprintf(os.Stderr, "%v\n", resultMatrix)
+	updated := true
+	for updated {
+		updated = false
+		for i := 0; i < l-1; i++ {
+			for j := i + 1; j < l; j++ {
+				a := resultMatrix[i][j]
+				b := resultMatrix[j][i]
+				if a <= b {
+					if preorder[i][j] == false {
+						updated = true
+						preorder[i][j] = true
+					}
+					for k := 0; k < l; k++ {
+						if preorder[j][k] == true {
+							if preorder[i][k] == false {
+								updated = true
+								preorder[i][k] = true
+							}
+						}
+					}
+				}
+				if b <= a {
+					if preorder[j][i] == false {
+						updated = true
+						preorder[j][i] = true
+					}
+					for k := 0; k < l; k++ {
+						if preorder[i][k] == true {
+							if preorder[j][k] == false {
+								updated = true
+								preorder[j][k] = true
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	for i := range voteIndexes {
+		for j := range voteIndexes {
+			if preorder[i][j] && preorder[j][i] {
+				cycles.Union(i, j)
+			}
+		}
+	}
+	sort.Slice(voteIndexes, less(cycles, resultMatrix))
+	grouped := groupSorted(voteIndexes, less(cycles, resultMatrix))
+	var final [][]int
+	for _, g := range grouped {
+		gs := resolveGroup(g, resultMatrix)
+		for _, g_ := range gs {
+			final = append(final, g_)
+		}
+	}
+	return final
 }
 
 func winsAgainstLower(myIndex int, others [][]int, resultMatrix [][]int) bool {

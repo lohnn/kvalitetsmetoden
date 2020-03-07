@@ -34,7 +34,7 @@ func main() {
 	fmt.Println("Finished reading JSON")
 
 	result := calculateNewModel(il, destinationFile)
-	
+
 	resultJSON, e := json.MarshalIndent(result, "", "    ")
 	check(e)
 	writeFile := destinationFile
@@ -45,10 +45,10 @@ func main() {
 
 func calculateNewModel(il NewInputList, destinationFile string) NewResult {
 	start := time.Now()
-	
+
 	result, e := calc(il)
 	check(e)
-	
+
 	elapsed := time.Now().Sub(start)
 	fmt.Println("Operation took " + elapsed.String())
 	fmt.Println()
