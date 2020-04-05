@@ -190,15 +190,41 @@ func popular(xs []int, resultMatrix [][]int) func(a, b int) bool {
 	}
 }
 
-func less(cycles *UnionFind, resultMatrix [][]int) func(int, int) bool {
+func less(voteIndexes []int, cycles *UnionFind, resultMatrix [][]int) func(int, int) bool {
 	return func(a, b int) bool {
-		ra := cycles.Root(a)
-		rb := cycles.Root(b)
+		va := voteIndexes[a]
+		vb := voteIndexes[b]
+		ra := cycles.Root(va)
+		rb := cycles.Root(vb)
 		if ra != rb {
+			// fmt.Printf("compare %v %v - roots %v %v - res %v %v - sum %v \n",
+			// a, b,
+			// ra, rb,
+			// resultMatrix[ra][rb], resultMatrix[rb][ra],
+			// resultMatrix[ra][rb] > resultMatrix[rb][ra],
+			// )
 			return resultMatrix[ra][rb] > resultMatrix[rb][ra]
-		} else {
-			return true
 		}
+		return true
+	}
+}
+
+func deltaLess(voteIndexes []int, deltaTable []int) func(int, int) bool {
+	return func(a, b int) bool {
+		va := voteIndexes[a]
+		vb := voteIndexes[b]
+		// ra := cycles.Root(a)
+		// rb := cycles.Root(b)
+		// if ra != rb {
+		// fmt.Printf("compare %v %v - roots %v %v - res %v %v - sum %v \n",
+		// a, b,
+		// ra, rb,
+		// deltaTable[ra], deltaTable[rb],
+		// deltaTable[ra] > deltaTable[rb],
+		// )
+		return deltaTable[va] > deltaTable[vb]
+		// }
+		// return true
 	}
 }
 
@@ -243,8 +269,6 @@ func resolve(voteIndexes []int, resultMatrix [][]int) [][]int {
 		preorder[i] = make([]bool, l)
 		preorder[i][i] = true
 	}
-	cycles := New(l)
-	fmt.Fprintf(os.Stderr, "%v\n", resultMatrix)
 	updated := true
 	for updated {
 		updated = false
@@ -283,6 +307,11 @@ func resolve(voteIndexes []int, resultMatrix [][]int) [][]int {
 			}
 		}
 	}
+
+	fmt.Printf("res matrix: %v\n", resultMatrix)
+	fmt.Printf("preorder: %v\n", preorder)
+
+	cycles := New(l)
 	for i := range voteIndexes {
 		for j := range voteIndexes {
 			if preorder[i][j] && preorder[j][i] {
@@ -290,8 +319,22 @@ func resolve(voteIndexes []int, resultMatrix [][]int) [][]int {
 			}
 		}
 	}
-	sort.Slice(voteIndexes, less(cycles, resultMatrix))
-	grouped := groupSorted(voteIndexes, less(cycles, resultMatrix))
+
+	fmt.Fprintf(os.Stderr, "cycles: %v\n", *cycles)
+	fmt.Fprintf(os.Stderr, "vodeindexes: %v\n", voteIndexes)
+
+	sort.Slice(voteIndexes, less(voteIndexes, cycles, resultMatrix))
+	fmt.Fprintf(os.Stderr, "voteindexes after sort: %v\n", voteIndexes)
+
+	// deltaTable := createDeltaTable(voteIndexes, resultMatrix)
+	// fmt.Printf("deltas: %v\n", deltaTable)
+	// sort.Slice(voteIndexes, deltaLess(voteIndexes, deltaTable))
+	// fmt.Fprintf(os.Stderr, "voteindexes after sort2: %v\n", voteIndexes)
+
+	grouped := groupSorted(voteIndexes, less(voteIndexes, cycles, resultMatrix))
+
+	fmt.Fprintf(os.Stderr, "grouped: %v\n", grouped)
+
 	var final [][]int
 	for _, g := range grouped {
 		gs := resolveGroup(g, resultMatrix)
@@ -299,7 +342,27 @@ func resolve(voteIndexes []int, resultMatrix [][]int) [][]int {
 			final = append(final, g_)
 		}
 	}
+	fmt.Fprintf(os.Stderr, "%v\n", final)
 	return final
+}
+
+func createDeltaTable(voteIndexes []int, resultMatrix [][]int) []int {
+	l := len(voteIndexes)
+	delta := make([]int, l)
+	//Wins
+	for y := 0; y < l; y++ {
+		for x := 0; x < l; x++ {
+			delta[x] += resultMatrix[x][y]
+		}
+	}
+
+	//Losses
+	for x := 0; x < l; x++ {
+		for y := 0; y < l; y++ {
+			delta[y] -= resultMatrix[x][y]
+		}
+	}
+	return delta
 }
 
 func winsAgainstLower(myIndex int, others [][]int, resultMatrix [][]int) bool {
