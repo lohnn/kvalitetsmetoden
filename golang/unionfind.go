@@ -12,10 +12,11 @@ func New(capacity int) *UnionFind {
 		root[i] = i
 		size[i] = 1
 	}
-	uf := new(UnionFind)
-	uf.root = root
-	uf.size = size
-	return uf
+	uf := UnionFind{
+		root: root,
+		size: size,
+	}
+	return &uf
 }
 
 func (this *UnionFind) Root(p int) int {
@@ -39,5 +40,4 @@ func (this *UnionFind) Union(a, b int) {
 		this.root[rb] = this.root[ra]
 		this.size[ra] += this.size[rb]
 	}
-
 }
